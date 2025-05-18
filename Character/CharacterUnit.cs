@@ -23,6 +23,21 @@ namespace Shin
             }
         }
 
+        private Transform _tr;
+
+        public Transform Tr
+        {
+            get
+            {
+                if (_tr == null)
+                {
+                    _tr = GetComponent<Transform>();
+                }
+
+                return _tr;
+            }
+        }
+
 
         //State
         [SerializeField] private PublicVariable.CharacterState _characterState;
@@ -72,7 +87,7 @@ namespace Shin
         private void CharacterInit()
         {
             EventInit();
-
+            AnimUnitInit();
             MoveUnitInit();
         }
 
@@ -119,6 +134,11 @@ namespace Shin
                     break;
             }
 
+            if (_characterState != state)
+            {
+                AnimationChange(state);
+            }
+            
             _characterState = state;
         }
 
