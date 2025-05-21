@@ -89,6 +89,7 @@ namespace Shin
             EventInit();
             AnimUnitInit();
             MoveUnitInit();
+            AttackUnitInit();
         }
 
         private void EventInit()

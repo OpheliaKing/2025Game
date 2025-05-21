@@ -23,6 +23,8 @@ namespace Shin
 
         public void SetPlayerMoveVector(Vector2 vector)
         {
+            
+            Debug.Log($"Test Inpuit {vector}");
             _moveInput = vector;
         }
 

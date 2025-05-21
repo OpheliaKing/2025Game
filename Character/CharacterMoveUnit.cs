@@ -1,11 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.Serialization;
 
 namespace Shin
 {
     public partial class CharacterUnit
     {
+        /// <summary>
+        /// 0이면 이동 가능 0보다 큰 숫자일 경우 이동 불가능
+        /// </summary>
+        private int _moveAbleStack = 0;
+
+        public bool MoveAble
+        {
+            get
+            {
+                return _moveAbleStack == 0;
+            }
+        }
+        
         protected float _moveSpeed = 1f;
         protected float _maxMoveSpeed = 5f;
         
@@ -18,6 +33,8 @@ namespace Shin
         protected int _currentJumpCount = 0;
 
         private int _horizontalLookVec = 0;
+
+        private float _maxFalldownSpeed = 10;
         
         private void MoveUnitInit()
         {
@@ -28,10 +45,27 @@ namespace Shin
                     JumpEnd();
                 }
             };
+
+            _moveAbleStack = 0;
+        }
+
+        public void AddMoveAbleStack()
+        {
+            _moveAbleStack++;
+        }
+
+        public void RemoveMoveAbleStack()
+        {
+            _moveAbleStack--;
         }
         
         public void Move(Vector2 vec)
         {
+            if (!MoveAble)
+            {
+                return;
+            }
+            
             var horizontal = vec.x;
             var vertical = vec.y;
     
@@ -114,6 +148,7 @@ namespace Shin
         public void MoveUnitUpdate()
         {
             MoveSpeedControll();
+            FalldownSpeedControll();
         }
     
         private void MoveSpeedControll()
@@ -129,6 +164,22 @@ namespace Shin
                 }
                 
                 Rb.velocity = new Vector2(_maxMoveSpeed * vec,_rb.velocity.y);
+            }
+        }
+
+        private void FalldownSpeedControll()
+        {
+            var falldownSpeed = Mathf.Abs(Rb.velocity.y);
+            if (falldownSpeed > _maxFalldownSpeed)
+            {
+                var vec = 1;
+                
+                if (Rb.velocity.y < 0)
+                {
+                    vec = -1;
+                }
+                
+                Rb.velocity = new Vector2(Rb.velocity.x,_maxFalldownSpeed * vec);
             }
         }
     }

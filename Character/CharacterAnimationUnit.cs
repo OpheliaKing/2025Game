@@ -53,11 +53,25 @@ namespace Shin
             }
         }
 
-        public void AnimationChange()
+        public void PlayBoolAnim(string name, bool value)
         {
-            
+            Anim.SetBool(name,value);
         }
-
+        
+        public void PlayFloatAnim(string name, float value)
+        {
+            Anim.SetFloat(name,value);
+        }
+        
+        public void PlayTriggerAnim(string name)
+        {
+            Anim.SetTrigger(name);
+        }
+        public void PlayAnim(string name, int layer = 0)
+        {
+            Anim.Play(name,layer);
+        }
+        
         public void UpdateGroundedAnimParamerters(bool isGrounded)
         {
             if (isGrounded && _isJump)
