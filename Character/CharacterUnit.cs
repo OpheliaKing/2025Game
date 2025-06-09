@@ -104,6 +104,7 @@ namespace Shin
         private void Update()
         {
             MoveUnitUpdate();
+            UpdateAIState();
         }
 
         //FSM

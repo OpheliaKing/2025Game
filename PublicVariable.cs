@@ -16,6 +16,21 @@ namespace Shin
             ATTACK,
             DIE,
         }
+
+        public enum CharacterAIState
+        {
+            CHASE,
+            STAND_BY,
+            ATTACK,
+            MOVE,
+        }
+
+        public enum CharacterAICommandState
+        {
+            PATROL,//일정 위치를 순찰
+            STAND_BY,//대기
+            FOLLOW,
+        }
     }
 }
 

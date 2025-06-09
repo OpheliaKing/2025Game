@@ -23,18 +23,24 @@ namespace Shin
 
         public void SetPlayerMoveVector(Vector2 vector)
         {
-            
-            Debug.Log($"Test Inpuit {vector}");
             _moveInput = vector;
         }
 
         public void ActiveAttack()
         {
+            if (PlayerUnit.IsAiState)
+            {
+                return;
+            }
             PlayerUnit.ActiveAttack();
         }
 
         public void ActiveJump()
         {
+            if (PlayerUnit.IsAiState)
+            {
+                return;
+            }
             PlayerUnit.ActiveJump();
         }
 
@@ -49,6 +55,11 @@ namespace Shin
         private void MoveInputUpdate()
         {
             if (PlayerUnit == null)
+            {
+                return;
+            }
+            
+            if (PlayerUnit.IsAiState)
             {
                 return;
             }

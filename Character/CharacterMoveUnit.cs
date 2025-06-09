@@ -61,6 +61,8 @@ namespace Shin
         
         public void Move(Vector2 vec)
         {
+            Debug.Log($" Vec {vec}");
+            
             if (!MoveAble)
             {
                 return;

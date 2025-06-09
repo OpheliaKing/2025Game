@@ -11,7 +11,7 @@ namespace Shin
         
         
         //해당 값은 테스트 용으로 가져옴 => 추후 테이블 등에서 공격의 최대 인덱스를 가져와야됨
-        private int _testAttackMaxCount = 3;
+        private int _testAttackMaxCount = 2;
 
         protected bool _isAttack;
         protected bool _ableToMoveAttack = false;
@@ -23,11 +23,18 @@ namespace Shin
         private void AttackUnitInit()
         {
             _maxAttackIndex = _testAttackMaxCount;
+            _currentAttackIndex = -1;
         }
         
         //예외처리 등등 추가해야됨
         public void ActiveAttack()
         {
+            if (!CheckAttackAble())
+            {
+                return;
+            }
+            
+            
             //어택 이름 받아올수 있도록 수정
             //아래 스크립트는 테스트 용
             
@@ -38,16 +45,17 @@ namespace Shin
             //공격 호출시
 
             //아래에 있는 조건 및 벨로시트 초기화 등은 함수등으로 묶어서 관리
+
+            AttackStart();
             
-            Rb.velocity = new Vector2(0, Rb.velocity.y);
-            
+            //이동 가능한 공격인지 체크
             if (!_ableToMoveAttack && _moveAbleStackToAttack == 0)
             {
                 _moveAbleStackToAttack++;
                 AddMoveAbleStack();
             }
 
-            if (_currentAttackIndex == 0)
+            if (_currentAttackIndex == -1)
             {
                 PlayAnim($"Red_Attack_0{_currentAttackIndex +1}");
             }
@@ -60,6 +68,28 @@ namespace Shin
             SetCharacterState(PublicVariable.CharacterState.ATTACK);
         }
 
+        public bool CheckAttackAble()
+        {
+            //공중공격은 아직 없음
+            if (IsCharacterAirState())
+            {
+                return false;
+            }
+            
+            if (CharacterState == PublicVariable.CharacterState.DIE)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        //공격시 호출
+        private void AttackStart()
+        {
+            Rb.velocity = new Vector2(0, Rb.velocity.y);
+        }
+        
         public void AttackAnimationStart(int index)
         {
             if (_currentAttackIndex != index)
@@ -82,13 +112,19 @@ namespace Shin
         private void AttackEnd()
         {
             PlayBoolAnim($"IsAttack",false);
-            _currentAttackIndex = 0;
+            _currentAttackIndex = -1;
             
             if (_moveAbleStackToAttack > 0)
             {
                 _moveAbleStackToAttack = 0;
                 RemoveMoveAbleStack();
             }
+        }
+
+
+        public void ActiveDamage(int index)
+        {
+            
         }
     }
 }
