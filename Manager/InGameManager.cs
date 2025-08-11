@@ -44,6 +44,16 @@ namespace Shin
             PlayerUnit.ActiveJump();
         }
 
+        public void ActivePartnerUI()
+        {
+            PlayerUI.instance.PlayerPartnerUI.ToggleSelectUI();
+        }
+
+        public void ChangePartnerUI(int value)
+        {
+            PlayerUI.instance.PlayerPartnerUI.ChangeSelectUI(value);
+        }
+        
         #endregion
 
 

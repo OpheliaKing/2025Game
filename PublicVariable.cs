@@ -27,9 +27,9 @@ namespace Shin
 
         public enum CharacterAICommandState
         {
-            PATROL,//일정 위치를 순찰
-            STAND_BY,//대기
-            FOLLOW,
+            PATROL = 0,//일정 위치를 순찰
+            STAND_BY = 1,//대기
+            FOLLOW = 2,
         }
     }
 }
