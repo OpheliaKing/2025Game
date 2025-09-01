@@ -90,6 +90,7 @@ namespace Shin
             AnimUnitInit();
             MoveUnitInit();
             AttackUnitInit();
+            AIStateInit();
         }
 
         private void EventInit()
@@ -111,13 +112,13 @@ namespace Shin
 
         public void SetCharacterState(PublicVariable.CharacterState state)
         {
-            //값이 오면 상황에 맞게 변경해주는 기능 필요
-
+            // 죽은 상태에서는 상태 변경 불가
             if (_characterState == PublicVariable.CharacterState.DIE)
             {
                 return;
             }
 
+            // 상태 전환 검증 및 수정
             switch (state)
             {
                 case PublicVariable.CharacterState.IDLE:
@@ -127,15 +128,22 @@ namespace Shin
                     }
                     break;
 
+                case PublicVariable.CharacterState.MOVE:
+                    if (!_isGrounded)
+                    {
+                        state = PublicVariable.CharacterState.MOVE_AIR;
+                    }
+                    break;
+
                 case PublicVariable.CharacterState.MOVE_AIR:
                     if (_isGrounded)
                     {
                         state = PublicVariable.CharacterState.MOVE;
                     }
-
                     break;
             }
 
+            // 상태가 실제로 변경된 경우에만 애니메이션 변경
             if (_characterState != state)
             {
                 AnimationChange(state);

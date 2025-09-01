@@ -70,23 +70,42 @@ namespace  Shin
         
         public void UpdateAIState()
         {
+            // AI가 비활성화된 경우 업데이트하지 않음
+            if (!_isAiState)
+            {
+                return;
+            }
+
             switch (_characterAICommandState)
             {
                 case PublicVariable.CharacterAICommandState.PATROL:
+                    PatrolAction();
                     break;
                 case PublicVariable.CharacterAICommandState.STAND_BY:
-
-                    return;
+                    StandByAction();
                     break;
                 case PublicVariable.CharacterAICommandState.FOLLOW:
                     if (_targetUnit == null)
                     {
+                        SetAiState(PublicVariable.CharacterAICommandState.STAND_BY);
                         return;
                     }
 
                     FollowAction();
                     break;
             }
+        }
+
+        private void PatrolAction()
+        {
+            // 순찰 로직 구현 (현재는 대기 상태로 전환)
+            SetAiState(PublicVariable.CharacterAICommandState.STAND_BY);
+        }
+
+        private void StandByAction()
+        {
+            // 대기 상태에서는 이동 중지
+            Move(Vector2.zero);
         }
 
         private void FollowAction()

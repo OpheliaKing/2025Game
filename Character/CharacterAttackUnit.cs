@@ -32,8 +32,7 @@ namespace Shin
             if (!CheckAttackAble())
             {
                 return;
-            }
-            
+            }            
             
             //어택 이름 받아올수 있도록 수정
             //아래 스크립트는 테스트 용
@@ -57,11 +56,11 @@ namespace Shin
 
             if (_currentAttackIndex == -1)
             {
-                PlayAnim($"Red_Attack_0{_currentAttackIndex +1}");
+                PlayAnim($"Red_Attack_0{_currentAttackIndex + 1}");
             }
             else
             {
-                PlayBoolAnim($"IsAttack",true);
+                PlayBoolAnim($"IsAttack", true);
             }
             
             _currentAttackIndex++;
@@ -70,13 +69,19 @@ namespace Shin
 
         public bool CheckAttackAble()
         {
-            //공중공격은 아직 없음
+            // 공중공격은 아직 없음
             if (IsCharacterAirState())
             {
                 return false;
             }
             
             if (CharacterState == PublicVariable.CharacterState.DIE)
+            {
+                return false;
+            }
+
+            // 이미 공격 중인 경우 체크
+            if (CharacterState == PublicVariable.CharacterState.ATTACK)
             {
                 return false;
             }

@@ -8,6 +8,9 @@ namespace Shin
 {
     public partial class CharacterUnit
     {
+
+        //Test
+
         /// <summary>
         /// 0이면 이동 가능 0보다 큰 숫자일 경우 이동 불가능
         /// </summary>
@@ -131,7 +134,7 @@ namespace Shin
         
         public void Jump()
         {
-            Rb.velocity = new Vector2(Rb.velocity.y, 0);
+            Rb.velocity = new Vector2(Rb.velocity.x, 0);
             
             Rb.AddForce(Vector2.up * _jumpSpeed, ForceMode2D.Impulse);
 
@@ -165,7 +168,7 @@ namespace Shin
                     vec = -1;
                 }
                 
-                Rb.velocity = new Vector2(_maxMoveSpeed * vec,_rb.velocity.y);
+                Rb.velocity = new Vector2(_maxMoveSpeed * vec, Rb.velocity.y);
             }
         }
 

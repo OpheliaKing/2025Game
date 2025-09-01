@@ -36,19 +36,19 @@ namespace Shin
             _inGameManager.ActiveJump();
         }
 
-        void OnActivePartnerUI(InputValue value)
+        void OnAbilityA(InputValue value)
         {
-            _inGameManager.ActivePartnerUI();
+            _inGameManager.ActiveAbilityA();
         }
 
-        void OnBeforePartnerUI(InputValue value)
+        void OnAbilityB(InputValue value)
         {
-            _inGameManager.ChangePartnerUI(-1);
+            _inGameManager.ActiveAbilityB();
         }
         
-        void OnNextPartnerUI(InputValue value)
+        void OnAbilityC(InputValue value)
         {
-            _inGameManager.ChangePartnerUI(1);
+            _inGameManager.ActiveAbilityC();
         }
     }
 }
