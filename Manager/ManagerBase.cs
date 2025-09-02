@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Shin
 {
-    public class ManagerBase<T> : SingletonObject<T> where T : MonoBehaviour
+    public class ManagerBase : MonoBehaviour
     {
         public virtual void ManagerInit()
         {

@@ -6,16 +6,16 @@ using UnityEngine.InputSystem;
 
 namespace Shin
 {
-    public class InputManager : MonoBehaviour
+    public class InputManager : ManagerBase
     {
         private PlayerInput _playerInput;
         public PlayerInput PlayerInput
         {
             get
             {
-                if(_playerInput == null)
+                if (_playerInput == null)
                 {
-                    _playerInput = GetComponent<PlayerInput>();
+                    _playerInput = GetComponentInChildren<PlayerInput>();
                 }
                 return _playerInput;
             }
@@ -27,6 +27,14 @@ namespace Shin
             get { return _inputMode; }
         }
 
+        public override void ManagerInit()
+        {
+            base.ManagerInit();
+
+            SetInputMode(INPUT_MODE.UISelect);
+        }
+
+
         public void SetInputMode(INPUT_MODE mode)
         {
             _inputMode = mode;
@@ -37,6 +45,7 @@ namespace Shin
         {
             PlayerInput.SwitchCurrentActionMap(_inputMode.ToString());
         }
+        
     }
 
     public enum INPUT_MODE
