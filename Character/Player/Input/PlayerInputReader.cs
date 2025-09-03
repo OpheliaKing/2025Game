@@ -9,9 +9,40 @@ namespace Shin
 {
     public class PlayerInputReader : MonoBehaviour
     {
+
+        private UIManager _uiManager;
+
+        private UIManager UIManager
+        {
+            get
+            {
+                if (_uiManager == null)
+                {
+                    _uiManager = GameManager.Instance.UImanager;
+                }
+
+                return _uiManager;
+            }
+        }
+
+        private InputManager _inputManager;
+
+        private InputManager InputManager
+        {
+            get
+            {
+                if (_inputManager == null)
+                {
+                    _inputManager = GameManager.Instance.InputManager;
+                }
+
+                return _inputManager;
+            }
+        }
+
         [SerializeField]
         private InGameManager _inGameManager;
-    
+
         private PlayerInput _inputHandle;
 
         public PlayerInput PlayerInput
@@ -26,33 +57,67 @@ namespace Shin
                 return _inputHandle;
             }
 
-        }   
+        }
 
         private Vector2 _moveInput;
-    
+
         [SerializeField] private CharacterUnit _unit;
-    
+
         public event UnityAction<Vector2> CallMove = delegate { };
-    
+
+
+
+
         void OnMove(InputValue value)
         {
             var realValue = value.Get<Vector2>();
             _moveInput = realValue;
 
-            Debug.Log($"Current :{PlayerInput.currentActionMap}");
 
-
-            if (_inGameManager == null)
+            switch (InputManager.InputMode)
             {
-                return;
-            }            
+                case INPUT_MODE.Player:
 
-            _inGameManager.SetPlayerMoveVector(_moveInput);
+                    if (_inGameManager == null)
+                    {
+                        return;
+                    }
+                    _inGameManager.SetPlayerMoveVector(_moveInput);
+                    break;
+                case INPUT_MODE.UISelect:
+                    Debug.Log("Test 1");
+
+                    if (_moveInput.x == 0)
+                    {
+                        break;
+                    }
+                    if (_moveInput.x > 0)
+                    {
+                        UIManager.Current.OnRight();
+                    }
+                    else
+                    {
+                        UIManager.Current.OnLeft();
+                    }
+
+                    break;
+            }
+        }
+
+        #region Player Input
+
+        public bool CheckPlayerInputAble()
+        {
+            if (_inGameManager == null || InputManager.InputMode != INPUT_MODE.Player)
+            {
+                return false;
+            }
+            return true;
         }
 
         void OnAttack(InputValue value)
         {
-             if (_inGameManager == null)
+            if (!CheckPlayerInputAble())
             {
                 return;
             }
@@ -61,17 +126,17 @@ namespace Shin
 
         void OnJump(InputValue value)
         {
-            if (_inGameManager == null)
+            if (!CheckPlayerInputAble())
             {
                 return;
             }
-            
+
             _inGameManager.ActiveJump();
         }
 
         void OnAbilityA(InputValue value)
         {
-             if (_inGameManager == null)
+            if (!CheckPlayerInputAble())
             {
                 return;
             }
@@ -80,22 +145,58 @@ namespace Shin
 
         void OnAbilityB(InputValue value)
         {
-            if (_inGameManager == null)
+            if (!CheckPlayerInputAble())
             {
                 return;
             }
             _inGameManager.ActiveAbilityB();
         }
-        
+
         void OnAbilityC(InputValue value)
         {
-                        
-         if (_inGameManager == null)
+
+            if (!CheckPlayerInputAble())
             {
                 return;
             }
-            
+
             _inGameManager.ActiveAbilityC();
         }
+        #endregion
+
+        #region UISelect
+
+        public bool CheckUIInputAble()
+        {
+            if (InputManager.InputMode != INPUT_MODE.UISelect)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        void OnSelect(InputValue value)
+        {
+            if (!CheckUIInputAble())
+            {
+                return;
+            }
+
+            UIManager.Current.OnConfirm();
+        }
+
+        void OnCancel(InputValue value)
+        {
+
+            if (!CheckUIInputAble())
+            {
+                return;
+            }
+
+           UIManager.Current.OnCancel();
+        }
+
+
+        #endregion
     }
 }
