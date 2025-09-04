@@ -14,28 +14,61 @@ namespace Shin
         [SerializeField]
         private List<UIBase> _uiPrefabList;
 
+		private List<UIBase> _cashedUI;
 
-        private readonly Stack<UIBase> _uiStack = new Stack<UIBase>();
+		private readonly Stack<UIBase> _uiStack = new Stack<UIBase>();
 
 		public UIBase Current => _uiStack.Count > 0 ? _uiStack.Peek() : null;
 
 		public override void ManagerInit()
 		{
 			base.ManagerInit();
+			if (_cashedUI == null)
+			{
+				_cashedUI = new List<UIBase>();
+			}
 		}
 
         public void ShowUI(string uiName)
         {
-            var reManager = GameManager.Instance.ResourceManager;
-            var uiPrefab = reManager.InstantiatePrefab<UIBase>(uiName,_canvas, reManager.UIPrefabPath);
-
-            if (uiPrefab == null)
+            if (string.IsNullOrEmpty(uiName))
             {
-                Debug.LogError($"Not Found Prefab!!! {uiName} ");
+                Debug.LogError("ShowUI called with null or empty uiName");
                 return;
             }
 
-            Push(uiPrefab);
+            UIBase uiInstance = null;
+            if (_cashedUI != null)
+            {
+                uiInstance = _cashedUI.Find(u => u != null && u.name == uiName);
+            }
+
+            if (uiInstance == null)
+            {
+                var reManager = GameManager.Instance.ResourceManager;
+                uiInstance = reManager.InstantiatePrefab<UIBase>(uiName,_canvas, reManager.UIPrefabPath);
+                if (uiInstance == null)
+                {
+                    Debug.LogError($"Not Found Prefab!!! {uiName} ");
+                    return;
+                }
+
+                uiInstance.name = uiName;
+                if (_cashedUI == null)
+                {
+                    _cashedUI = new List<UIBase>();
+                }
+                _cashedUI.Add(uiInstance);
+            }
+            else
+            {
+                if (uiInstance.transform.parent != _canvas)
+                {
+                    uiInstance.transform.SetParent(_canvas, false);
+                }
+            }
+
+            Push(uiInstance);
         }
 
         public void Push(UIBase ui)
