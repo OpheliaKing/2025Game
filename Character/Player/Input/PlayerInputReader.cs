@@ -85,7 +85,6 @@ namespace Shin
                     _inGameManager.SetPlayerMoveVector(_moveInput);
                     break;
                 case INPUT_MODE.UISelect:
-                    Debug.Log("Test 1");
 
                     if (_moveInput.x == 0)
                     {
