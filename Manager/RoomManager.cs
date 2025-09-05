@@ -93,6 +93,11 @@ namespace Shin
             UpdateRoomPlayers(PhotonNetwork.PlayerList);
         }
 
+        public void GameStart()
+        {
+            GameManager.Instance.SceneController.LoadScene("InGameScene");
+        }
+
         public void SetActive(bool isActive)
         {
             gameObject.SetActive(isActive);

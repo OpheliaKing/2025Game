@@ -14,6 +14,17 @@ namespace Shin
 
         #region  Managers
 
+        [SerializeField]
+        private SceneController _sceneController;
+
+        public SceneController SceneController
+        {
+            get
+            {
+                return _sceneController;
+            }
+        }
+
         private ResourceManager _resourceManager;
 
         public ResourceManager ResourceManager
@@ -65,7 +76,7 @@ namespace Shin
         {
             get
             {
-                                if (_inputManager == null)
+                if (_inputManager == null)
                 {
                     for (int i = 0; i < _managers.Count; i++)
                     {
@@ -76,6 +87,7 @@ namespace Shin
                         }
                     }
                 }
+
                 return _inputManager;
             }
         }
