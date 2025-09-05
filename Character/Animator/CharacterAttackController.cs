@@ -1,10 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Shin;
-using TMPro;
-using Unity.VisualScripting;
-using UnityEditor.Animations;
 using UnityEngine;
 
 public class CharacterAttackController : StateMachineBehaviour
@@ -39,7 +33,7 @@ public class CharacterAttackController : StateMachineBehaviour
 
         if (_master != null)
         {
-            if (stateInfo.normalizedTime >= attackTiming && _isAttackEnd)
+            if (stateInfo.normalizedTime >= attackTiming && !_isAttackEnd)
             {
                 _master.ActiveDamage(AttackIndex);
                 _isAttackEnd = true;
