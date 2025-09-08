@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
@@ -95,7 +96,19 @@ namespace Shin
 
         public void GameStart()
         {
-            GameManager.Instance.SceneController.LoadScene("InGameScene");
+            GameManager.Instance.UImanager.Clear();
+            GameManager.Instance.SceneController.LoadScene("InGameScene", InGameLoad);
+        }
+
+        private void InGameLoad()
+        {
+            GameManager.Instance.StartCoroutine(TestCo());
+        }
+
+        private IEnumerator TestCo()
+        {
+            yield return new WaitForSeconds(1f);
+            InGameManager.Instance.StartGame(null);
         }
 
         public void SetActive(bool isActive)

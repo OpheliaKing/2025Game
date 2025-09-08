@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
@@ -25,7 +26,7 @@ namespace Shin
 
 		public string CurrentSceneName => SceneManager.GetActiveScene().name;
 
-		public void LoadScene(string sceneName)
+		public void LoadScene(string sceneName, Action loadComplete = null)
 		{
 			if (string.IsNullOrEmpty(sceneName)) return;
 			StopActiveLoadIfAny();
@@ -37,6 +38,7 @@ namespace Shin
 				PhotonNetwork.LoadLevel(sceneName);
 				onLoadProgress?.Invoke(1f);
 				onAfterSceneLoad?.Invoke(sceneName);
+				loadComplete?.Invoke();
 				return;
 			}
 

@@ -1,12 +1,8 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
 
 namespace Shin
 {
-    public class InGameManager : MonoBehaviour
+    public class InGameManager : SingletonObject<InGameManager>
     {
         [SerializeField]
         private CharacterUnit _playerUnit;
@@ -16,70 +12,48 @@ namespace Shin
             get { return _playerUnit; }
         }
 
-        private Vector2 _moveInput;
+        private InGamePlayerInfo _playerInfo;
 
-
-        #region  Input
-
-        public void SetPlayerMoveVector(Vector2 vector)
+        public InGamePlayerInfo PlayerInfo
         {
-            _moveInput = vector;
-        }
-
-        public void ActiveAttack()
-        {
-            if (PlayerUnit.IsAiState)
+            get
             {
-                return;
+                if (_playerInfo == null)
+                {
+                    _playerInfo = FindObjectOfType<InGamePlayerInfo>();
+                }
+                return _playerInfo;
             }
-            PlayerUnit.ActiveAttack();
         }
 
-        public void ActiveJump()
+        private InGameStageInfo _stageInfo;
+
+        public InGameStageInfo StageInfo
         {
-            if (PlayerUnit.IsAiState)
+            get
             {
-                return;
+                if (_stageInfo == null)
+                {
+                    _stageInfo = FindObjectOfType<InGameStageInfo>();
+                }
+                return _stageInfo;
             }
-            PlayerUnit.ActiveJump();
-        }
 
-        public void ActiveAbilityA()
-        {
-            PlayerUnit.ActiveAbilityA();
         }
-
-        public void ActiveAbilityB()
-        {
-            PlayerUnit.ActiveAbilityB();
-        }
-
-        public void ActiveAbilityC()
-        {
-            PlayerUnit.ActiveAbilityC();
-        }
-        
-        #endregion
-
 
         private void Update()
         {
-            MoveInputUpdate();
+            //MoveInputUpdate();
         }
 
-        private void MoveInputUpdate()
+        public void StartGame(StageData data)
         {
-            if (PlayerUnit == null)
-            {
-                return;
-            }
-            
-            if (PlayerUnit.IsAiState)
-            {
-                return;
-            }
-        
-            PlayerUnit.Move(_moveInput);
+            StageInit("Stage_0001");
+        }
+
+        private void StageInit(string stageTid)
+        {
+            StageInfo.LoadMapPrefab(stageTid);
         }
     }
 }

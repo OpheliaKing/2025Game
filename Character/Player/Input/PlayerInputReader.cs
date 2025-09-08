@@ -82,7 +82,7 @@ namespace Shin
                     {
                         return;
                     }
-                    _inGameManager.SetPlayerMoveVector(_moveInput);
+                    //_inGameManager.SetPlayerMoveVector(_moveInput);
                     break;
                 case INPUT_MODE.UISelect:
 
@@ -120,7 +120,7 @@ namespace Shin
             {
                 return;
             }
-            _inGameManager.ActiveAttack();
+            //_inGameManager.ActiveAttack();
         }
 
         void OnJump(InputValue value)
@@ -130,7 +130,7 @@ namespace Shin
                 return;
             }
 
-            _inGameManager.ActiveJump();
+            //_inGameManager.ActiveJump();
         }
 
         void OnAbilityA(InputValue value)
@@ -139,7 +139,7 @@ namespace Shin
             {
                 return;
             }
-            _inGameManager.ActiveAbilityA();
+           // _inGameManager.ActiveAbilityA();
         }
 
         void OnAbilityB(InputValue value)
@@ -148,7 +148,7 @@ namespace Shin
             {
                 return;
             }
-            _inGameManager.ActiveAbilityB();
+           // _inGameManager.ActiveAbilityB();
         }
 
         void OnAbilityC(InputValue value)
@@ -159,7 +159,7 @@ namespace Shin
                 return;
             }
 
-            _inGameManager.ActiveAbilityC();
+            //_inGameManager.ActiveAbilityC();
         }
         #endregion
 

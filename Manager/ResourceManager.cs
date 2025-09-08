@@ -11,6 +11,11 @@ public class ResourceManager : ManagerBase
     [SerializeField]
     private string _uiPrefabPath = "Prefab/UI"; // Resources 하위 UI 프리팹 경로
 
+    [SerializeField]
+    private string _soPath = "SO";
+
+    private Dictionary<string, ScriptableObject> _cashedSO = new Dictionary<string, ScriptableObject>();
+
     public string PrefabBasePath
     {
         get { return _prefabBasePath; }
@@ -21,6 +26,12 @@ public class ResourceManager : ManagerBase
     {
         get { return _uiPrefabPath; }
         set { _uiPrefabPath = value ?? string.Empty; }
+    }
+
+    public string SOPath
+    {
+        get { return _soPath; }
+        set { _soPath = value ?? string.Empty; }
     }
 
     private static string CombineResourcePath(string basePath, string subPath)
@@ -68,5 +79,20 @@ public class ResourceManager : ManagerBase
             return null;
         }
         return parent == null ? Object.Instantiate(prefab) : Object.Instantiate(prefab, parent);
+    }
+
+    public T LoadSO<T>(string nameOrRelativePath, string basePath = null) where T : ScriptableObject
+    {
+        string path = CombineResourcePath(basePath ?? _prefabBasePath, nameOrRelativePath);
+
+        if (_cashedSO.ContainsKey(nameOrRelativePath))
+        {
+            return (T)_cashedSO[nameOrRelativePath];
+        }
+        else
+        {
+            return Resources.Load<T>(path);
+        }
+        
     }
 }

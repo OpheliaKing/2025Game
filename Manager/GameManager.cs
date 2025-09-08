@@ -92,6 +92,8 @@ namespace Shin
             }
         }
 
+
+
         #endregion
 
         protected override void Awake()
