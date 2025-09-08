@@ -96,19 +96,7 @@ namespace Shin
 
         public void GameStart()
         {
-            GameManager.Instance.UImanager.Clear();
-            GameManager.Instance.SceneController.LoadScene("InGameScene", InGameLoad);
-        }
-
-        private void InGameLoad()
-        {
-            GameManager.Instance.StartCoroutine(TestCo());
-        }
-
-        private IEnumerator TestCo()
-        {
-            yield return new WaitForSeconds(1f);
-            InGameManager.Instance.StartGame(null);
+            GameManager.Instance.LobbyManager.GameStart();
         }
 
         public void SetActive(bool isActive)

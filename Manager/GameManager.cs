@@ -92,7 +92,43 @@ namespace Shin
             }
         }
 
+        [SerializeField]
+        private NetworkManager _netWorkManager;
+        
+        public NetworkManager NetworkManager
+        {
+            get
+            {
+                if (_netWorkManager == null)
+                {
+                    _netWorkManager = GetComponentInChildren<NetworkManager>();
+                }
+                
+                return _netWorkManager;
+            }
+        }
 
+
+        private LobbyManager _lobbyManager;
+        
+        public LobbyManager LobbyManager
+        {
+            get
+            {
+                if (_lobbyManager == null)
+                {
+                    Debug.Log("Not FOund Lobby Manager !!!!");
+                    return null;
+                }
+
+                return _lobbyManager;
+            }
+        }
+
+        public void SetLobbyManager(LobbyManager manager)
+        {
+            _lobbyManager = manager;
+        }
 
         #endregion
 
@@ -115,6 +151,11 @@ namespace Shin
             {
                 _managers[i].ManagerInit();
             }
+        }
+
+        public void AddManager(ManagerBase manager)
+        {
+            _managers.Add(manager);
         }
 
         private void GameStart()

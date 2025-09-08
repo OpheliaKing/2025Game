@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
@@ -57,6 +58,11 @@ namespace Shin
         private void Awake()
         {
             PhotonNetwork.AutomaticallySyncScene = true;
+
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.SetLobbyManager(this);
+            }
         }
 
         private void Start()
@@ -278,6 +284,11 @@ namespace Shin
                 }
             }
             PushPlayersToRoomManager();
+        }
+
+        public void GameStart()
+        {
+            GameManager.Instance.NetworkManager.GameStart();
         }
     }
 }

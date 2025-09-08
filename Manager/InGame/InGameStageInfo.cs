@@ -153,31 +153,6 @@ namespace Shin
             Debug.Log($"맵 프리팹 로드 RPC 호출됨 - mapTid: '{mapTid}'");
         }
 
-
-        /// <summary>
-        /// 테스트용 메서드 - 스테이지와 캐릭터 데이터 설정
-        /// </summary>
-        // [ContextMenu("Test Set Game Data")]
-        // public void TestSetGameData()
-        // {
-        //     // 테스트용 스테이지 데이터
-        //     StageData testStage = new StageData("stage_forest", "숲의 전장", 1, "고대 숲에서 벌어지는 전투");
-
-        //     // 테스트용 캐릭터 데이터
-        //     CharacterData testCharacter = new CharacterData(
-        //         "char_warrior",
-        //         "전사",
-        //         5,
-        //         150f,
-        //         150f,
-        //         25f,
-        //         10f,
-        //         new string[] { "강타", "방어막", "돌진" }
-        //     );
-
-        //     SetLocalGameData(testStage, testCharacter);
-        // }
-
         public void LoadMapPrefab(string mapTid)
         {
             var data = StageSO.FindStageById(mapTid);
