@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Shin;
+using UnityEngine.Rendering;
 
 namespace Shin
 {
@@ -106,6 +107,20 @@ namespace Shin
         {
             MoveUnitUpdate();
             UpdateAIState();
+            Test();
+        }
+
+        private void Test()
+        {
+            if (photonView.IsMine)
+            {
+                if (Input.GetKey(KeyCode.T))
+                {
+                    var speed = UnityEngine.Random.Range(0.001f, 0.005f);
+                    transform.position = new Vector3(Tr.position.x + speed, Tr.position.y, Tr.position.z);
+                }
+
+            }
         }
 
         //FSM
@@ -148,7 +163,7 @@ namespace Shin
             {
                 AnimationChange(state);
             }
-            
+
             _characterState = state;
         }
 
