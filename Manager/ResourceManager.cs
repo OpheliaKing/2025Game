@@ -12,6 +12,9 @@ public class ResourceManager : ManagerBase
     private string _uiPrefabPath = "Prefab/UI"; // Resources 하위 UI 프리팹 경로
 
     [SerializeField]
+    private string _characterPrefabPath = "Prefab/Player/Character";
+
+    [SerializeField]
     private string _soPath = "SO";
 
     private Dictionary<string, ScriptableObject> _cashedSO = new Dictionary<string, ScriptableObject>();
@@ -26,6 +29,13 @@ public class ResourceManager : ManagerBase
     {
         get { return _uiPrefabPath; }
         set { _uiPrefabPath = value ?? string.Empty; }
+    }
+
+
+    public string CharacterPrefabPath
+    {
+        get { return _characterPrefabPath; }
+        set { _characterPrefabPath = value ?? string.Empty; }
     }
 
     public string SOPath
@@ -93,6 +103,6 @@ public class ResourceManager : ManagerBase
         {
             return Resources.Load<T>(path);
         }
-        
+
     }
 }

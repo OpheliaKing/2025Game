@@ -156,60 +156,6 @@ namespace Shin
             //StageInit(stageData);
         }
 
-        /// <summary>
-        /// StageDataSO에서 stageId로 스테이지 데이터 설정 및 동기화
-        /// </summary>
-        /// <param name="stageDataSO">StageDataSO 참조</param>
-        /// <param name="stageId">스테이지 ID</param>
-        /// <param name="characterData">캐릭터 데이터</param>
-        public void SetStageDataFromSO(StageDataSO stageDataSO, string stageId, CharacterData characterData)
-        {
-            if (stageDataSO == null)
-            {
-                Debug.LogError("StageDataSO가 null입니다.");
-                return;
-            }
-
-            StageData stageData = stageDataSO.FindStageDataForSyncById(stageId);
-            if (stageData == null)
-            {
-                Debug.LogError($"스테이지를 찾을 수 없습니다: {stageId}");
-                return;
-            }
-
-            SetLocalGameData(stageData, characterData);
-        }
-
-        /// <summary>
-        /// StageDataSO에서 인덱스로 스테이지 데이터 설정 및 동기화
-        /// </summary>
-        /// <param name="stageDataSO">StageDataSO 참조</param>
-        /// <param name="stageIndex">스테이지 인덱스</param>
-        /// <param name="characterData">캐릭터 데이터</param>
-        public void SetStageDataFromSOByIndex(StageDataSO stageDataSO, int stageIndex, CharacterData characterData)
-        {
-            if (stageDataSO == null)
-            {
-                Debug.LogError("StageDataSO가 null입니다.");
-                return;
-            }
-
-            StageDataItem stageItem = stageDataSO.GetStageByIndex(stageIndex);
-            if (stageItem == null)
-            {
-                Debug.LogError($"스테이지 인덱스가 범위를 벗어났습니다: {stageIndex}");
-                return;
-            }
-
-            StageData stageData = new StageData(
-                stageItem.stageData.stageId,
-                stageItem.stageData.stageName,
-                stageItem.stageData.stageLevel,
-                stageItem.stageData.stageDescription
-            );
-
-            SetLocalGameData(stageData, characterData);
-        }
 
         /// <summary>
         /// 캐릭터 유닛 초기화 (기존 메서드 오버로드)
@@ -219,66 +165,48 @@ namespace Shin
             // 기본 캐릭터 초기화
         }
 
-        private void ProcessCharacterData(CharacterData characterData, string playerId)
+
+        public void LoadPlayerPrefab(string playerTid)
         {
-            if (string.IsNullOrEmpty(characterData.characterId))
-                return;
-
-            Debug.Log($"캐릭터 설정: {characterData.characterName} (레벨: {characterData.characterLevel})");
-
-            // 캐릭터별 초기화 로직
-            CharacterUnitInit(characterData, playerId);
-        }
-
-        /// <summary>
-        /// 캐릭터 유닛 초기화 (데이터 기반)
-        /// </summary>
-        private void CharacterUnitInit(CharacterData characterData, string playerId)
-        {
-            _selectCharacterTid = characterData.characterId;
-
-            // 로컬 플레이어인 경우에만 실제 캐릭터 유닛 설정
-            if (playerId == PhotonNetwork.LocalPlayer.UserId && _playerUnit != null)
+            var resourceManager = GameManager.Instance.ResourceManager;
+            if (!PhotonNetwork.InRoom)
             {
-                ApplyCharacterDataToUnit(_playerUnit, characterData);
+                Debug.LogWarning("포톤 룸에 접속되어 있지 않아 네트워크 인스턴스 생성을 진행할 수 없습니다.");
+                return;
             }
 
-            // 캐릭터별 특수 능력 설정
-            SetupCharacterAbilities(characterData);
-        }
-
-        /// <summary>
-        /// 캐릭터 데이터를 유닛에 적용
-        /// </summary>
-        private void ApplyCharacterDataToUnit(CharacterUnit unit, CharacterData characterData)
-        {
-            // 캐릭터 스탯 적용
-            // unit.SetHealth(characterData.health);
-            // unit.SetMaxHealth(characterData.maxHealth);
-            // unit.SetAttackPower(characterData.attackPower);
-            // unit.SetDefense(characterData.defense);
-
-            Debug.Log($"캐릭터 {characterData.characterName}의 스탯이 적용되었습니다.");
-        }
-
-        /// <summary>
-        /// 캐릭터별 특수 능력 설정
-        /// </summary>
-        private void SetupCharacterAbilities(CharacterData characterData)
-        {
-            if (characterData.abilities == null || characterData.abilities.Length == 0)
-                return;
-
-            foreach (string ability in characterData.abilities)
+            // 리소스에서 프리팹 자산 조회 (존재 확인용)
+            var obj = resourceManager.LoadPrefab<CharacterBase>(playerTid, resourceManager.CharacterPrefabPath);
+            if (obj == null)
             {
-                Debug.Log($"캐릭터 {characterData.characterName}의 능력: {ability}");
-                // 능력별 설정 로직
+                Debug.LogError($"캐릭터 프리팹 로드 실패: {playerTid}");
+                return;
             }
-        }
 
-        private void LoadPlayerPrafab(string playerTid)
-        {
+            // PhotonNetwork.Instantiate는 Resources 상대 경로 문자열을 요구하므로 경로를 구성
+            string basePath = resourceManager.CharacterPrefabPath?.Trim('/', '\\') ?? string.Empty;
+            string namePart = playerTid?.Trim('/', '\\') ?? string.Empty;
+            string resourcePath = string.IsNullOrEmpty(basePath) ? namePart : ($"{basePath}/{namePart}");
 
+            // 네트워크 인스턴스 생성 (기본 위치/회전으로 배치)
+            GameObject networkObj = PhotonNetwork.Instantiate(resourcePath, Vector3.zero, Quaternion.identity);
+            if (networkObj == null)
+            {
+                Debug.LogError($"포톤 인스턴스 생성 실패: {resourcePath}");
+                return;
+            }
+
+            // 생성된 객체에서 캐릭터 유닛 참조 캐싱
+            _playerUnit = networkObj.GetComponent<CharacterUnit>();
+            if (_playerUnit == null)
+            {
+                Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
+            }
+
+            Debug.Log($"{networkObj.name} 네트워크 생성 완료 ({resourcePath})");
+
+            var number = PhotonNetwork.LocalPlayer.ActorNumber;
+            networkObj.transform.position = new Vector3(number, 1f, 0f);
         }
 
     }

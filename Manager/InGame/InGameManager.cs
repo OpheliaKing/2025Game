@@ -49,11 +49,19 @@ namespace Shin
         public void StartGame(StageData data)
         {
             StageInit("Stage_0001");
+
+            
         }
 
         private void StageInit(string stageTid)
         {
             StageInfo.LoadMapPrefab(stageTid);
+            SpawnCharacter("PlayerBase");
+        }
+
+        private void SpawnCharacter(string characterTid)
+        {
+            PlayerInfo.LoadPlayerPrefab(characterTid);            
         }
     }
 }
