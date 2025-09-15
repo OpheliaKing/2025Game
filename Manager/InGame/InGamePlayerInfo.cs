@@ -8,7 +8,7 @@ using Photon.Realtime;
 
 namespace Shin
 {
-    public class InGamePlayerInfo : MonoBehaviourPunCallbacks
+    public partial class InGamePlayerInfo : MonoBehaviourPunCallbacks
     {
         [SerializeField]
         private CharacterUnit _playerUnit;
@@ -16,6 +16,14 @@ namespace Shin
         public CharacterUnit PlayerUnit
         {
             get { return _playerUnit; }
+        }
+
+        public bool IsMyCharacter
+        {
+            get
+            {
+                return PlayerUnit.photonView.IsMine;
+            }
         }
 
         [Header("Stage & Character Settings")]
@@ -37,27 +45,11 @@ namespace Shin
 
         private void Update()
         {
-            //MoveInputUpdate();
+            MoveInputUpdate();
         }
 
         #region Game Data Sync Methods
 
-        /// <summary>
-        /// 로컬 게임 데이터를 설정하고 다른 플레이어들에게 동기화
-        /// </summary>
-        public void SetLocalGameData(StageData stageData, CharacterData characterData)
-        {
-            _localGameData.selectedStage = stageData;
-            _localGameData.selectedCharacter = characterData;
-            _localGameData.playerId = PhotonNetwork.LocalPlayer.UserId;
-            _localGameData.playerNickname = PhotonNetwork.LocalPlayer.NickName;
-            _localGameData.timestamp = Time.time;
-
-            // RPC로 다른 플레이어들에게 데이터 전송
-            photonView.RPC("ReceiveGameData", RpcTarget.Others, JsonUtility.ToJson(_localGameData));
-
-            Debug.Log($"로컬 게임 데이터 설정 완료 - 스테이지: {stageData.stageName}, 캐릭터: {characterData.characterName}");
-        }
 
         /// <summary>
         /// 다른 플레이어로부터 게임 데이터를 받는 RPC 메서드
@@ -97,14 +89,6 @@ namespace Shin
         public Dictionary<string, GameSyncData> GetAllPlayerGameData()
         {
             return new Dictionary<string, GameSyncData>(_playerGameData);
-        }
-
-        /// <summary>
-        /// 로컬 게임 데이터를 가져오기
-        /// </summary>
-        public GameSyncData GetLocalGameData()
-        {
-            return _localGameData;
         }
 
         /// <summary>
@@ -150,13 +134,6 @@ namespace Shin
 
         #endregion
 
-        public void StartGame()
-        {
-            var stageData = new StageData("test", "test", 0, "test");
-            //StageInit(stageData);
-        }
-
-
         /// <summary>
         /// 캐릭터 유닛 초기화 (기존 메서드 오버로드)
         /// </summary>
@@ -164,8 +141,6 @@ namespace Shin
         {
             // 기본 캐릭터 초기화
         }
-
-
         public void LoadPlayerPrefab(string playerTid)
         {
             var resourceManager = GameManager.Instance.ResourceManager;
@@ -208,6 +183,5 @@ namespace Shin
             var number = PhotonNetwork.LocalPlayer.ActorNumber;
             networkObj.transform.position = new Vector3(number, 1f, 0f);
         }
-
     }
 }

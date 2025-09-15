@@ -22,6 +22,7 @@ namespace Shin
             };
 
             GameManager.Instance.SceneController.LoadScene("InGameScene", startScene);
+            GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
         }
 
         [PunRPC]

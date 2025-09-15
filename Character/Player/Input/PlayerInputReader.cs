@@ -40,8 +40,19 @@ namespace Shin
             }
         }
 
-        [SerializeField]
         private InGameManager _inGameManager;
+
+        public InGameManager InGameManager
+        {
+            get
+            {
+                if (_inGameManager == null)
+                {
+                    _inGameManager = InGameManager.Instance;
+                }
+                return _inGameManager;
+            }
+        }
 
         private PlayerInput _inputHandle;
 
@@ -70,19 +81,24 @@ namespace Shin
 
         void OnMove(InputValue value)
         {
+            Debug.Log("Move Test 1");
             var realValue = value.Get<Vector2>();
             _moveInput = realValue;
-
 
             switch (InputManager.InputMode)
             {
                 case INPUT_MODE.Player:
 
-                    if (_inGameManager == null)
+
+                    Debug.Log("Move Test 2");
+
+                    if (InGameManager == null)
                     {
                         return;
                     }
-                    //_inGameManager.SetPlayerMoveVector(_moveInput);
+
+                     Debug.Log("Move Test 3");
+                    InGameManager.PlayerInfo.SetPlayerMoveVector(_moveInput);
                     break;
                 case INPUT_MODE.UISelect:
 
@@ -107,7 +123,7 @@ namespace Shin
 
         public bool CheckPlayerInputAble()
         {
-            if (_inGameManager == null || InputManager.InputMode != INPUT_MODE.Player)
+            if (InGameManager == null || InputManager.InputMode != INPUT_MODE.Player || !InGameManager.PlayerInfo.IsMyCharacter)
             {
                 return false;
             }
@@ -120,7 +136,7 @@ namespace Shin
             {
                 return;
             }
-            //_inGameManager.ActiveAttack();
+            InGameManager.PlayerUnit.ActiveAttack();
         }
 
         void OnJump(InputValue value)
@@ -130,7 +146,7 @@ namespace Shin
                 return;
             }
 
-            //_inGameManager.ActiveJump();
+            InGameManager.PlayerInfo.ActiveJump();
         }
 
         void OnAbilityA(InputValue value)
@@ -139,7 +155,7 @@ namespace Shin
             {
                 return;
             }
-           // _inGameManager.ActiveAbilityA();
+           InGameManager.PlayerInfo.ActiveAbilityA();
         }
 
         void OnAbilityB(InputValue value)
@@ -148,7 +164,7 @@ namespace Shin
             {
                 return;
             }
-           // _inGameManager.ActiveAbilityB();
+           InGameManager.PlayerInfo.ActiveAbilityB();
         }
 
         void OnAbilityC(InputValue value)
@@ -159,7 +175,7 @@ namespace Shin
                 return;
             }
 
-            //_inGameManager.ActiveAbilityC();
+            InGameManager.PlayerInfo.ActiveAbilityC();
         }
         #endregion
 
