@@ -88,10 +88,6 @@ namespace Shin
             switch (InputManager.InputMode)
             {
                 case INPUT_MODE.Player:
-
-
-                    Debug.Log("Move Test 2");
-
                     if (InGameManager == null)
                     {
                         return;

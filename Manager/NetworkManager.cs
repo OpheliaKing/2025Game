@@ -22,6 +22,13 @@ namespace Shin
             };
 
             GameManager.Instance.SceneController.LoadScene("InGameScene", startScene);
+            photonView.RPC("SetInputModeRPC", RpcTarget.All);
+            
+        }
+
+        [PunRPC]
+        private void SetInputModeRPC()
+        {
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
         }
 
