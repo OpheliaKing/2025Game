@@ -1,49 +1,85 @@
 using System;
 using System.Collections;
-using Photon.Pun;
+using Fusion;
+using Fusion.Sockets;
 using UnityEngine;
+using System.Collections.Generic;
+using Mono.Cecil.Cil;
 
 namespace Shin
 {
-    public class NetworkManager : MonoBehaviourPunCallbacks
+    public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
     {
+        [SerializeField]
+        private NetworkRunner _runner;
+
+        public NetworkRunner Runner
+        {
+            get
+            {
+                if (_runner == null)
+                {
+                    FindRuuner();
+                }
+
+                return _runner;
+            }
+        }
+
+        private bool FindRuuner()
+        {
+            var runner = FindObjectOfType<NetworkRunner>();
+            if (runner == null)
+            {
+                Debug.LogError("NetworkRunner가 씬에 필요합니다. (FusionBootstrap 또는 Runner 프리팹 배치)");
+                return false;
+            }
+
+            return true;
+        }
+
         public void GameStart()
         {
-            Action startScene = () =>
+            if (!FindRuuner())
             {
-                if (photonView != null)
-                {
-                    photonView.RPC("InGameLoad", RpcTarget.All);
-                }
-                else
-                {
-                    Debug.Log("photonView is null");
-                }
-            };
+                Debug.LogError("NetworkRunner가 씬에 필요합니다. (FusionBootstrap 또는 Runner 프리팹 배치)");
+                return;
+            }
 
-            GameManager.Instance.SceneController.LoadScene("InGameScene", startScene);
-            photonView.RPC("SetInputModeRPC", RpcTarget.All);
-            
+            // 씬 로드는 NetworkSceneManagerDefault가 관리. 부트스트랩/러너 설정에 따름
+            StartCoroutine(StartGameRoutine());
+
         }
 
-        [PunRPC]
-        private void SetInputModeRPC()
+        private IEnumerator StartGameRoutine()
         {
-            GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
-        }
-
-        [PunRPC]
-        private void InGameLoad()
-        {
-            GameManager.Instance.UImanager.Clear();
-            GameManager.Instance.StartCoroutine(TestCo());
-        }
-
-        private IEnumerator TestCo()
-        {
+            // 러너가 준비될 시간을 조금 준 뒤 시작 로직 실행
             yield return new WaitForSeconds(1f);
+            GameManager.Instance.UImanager.Clear();
+            GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
             InGameManager.Instance.StartGame(null);
         }
+
+        // INetworkRunnerCallbacks 구현 (필요 메서드만 스텁)
+        public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) { }
+        public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
+        public void OnInput(NetworkRunner runner, NetworkInput input) { }
+        public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+        public void OnConnectedToServer(NetworkRunner runner) { }
+        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
+        public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
+        public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
+        public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
+        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
+        public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
+        public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+        public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
+        public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
+        public void OnSceneLoadDone(NetworkRunner runner) { }
+        public void OnSceneLoadStart(NetworkRunner runner) { }
+        public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
+        public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
     }
 }
 

@@ -2,13 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
-using Photon.Pun;
-using Photon.Pun.Demo.Cockpit;
 using Unity.VisualScripting;
 
 namespace Shin
 {
-    public class InGameStageInfo : MonoBehaviourPunCallbacks
+    public class InGameStageInfo : MonoBehaviour
     {
         [Header("Stage & Character Settings")]
         [SerializeField]
@@ -139,18 +137,6 @@ namespace Shin
                     Debug.LogWarning($"알 수 없는 스테이지 ID: {stageData.stageId}");
                     break;
             }
-        }
-
-        /// <summary>
-        /// 맵 프리팹 로드 RPC (모든 플레이어가 호출)
-        /// </summary>
-        [PunRPC]
-        private void LoadMapPrefabRPC(string mapTid)
-        {
-            // 실제 LoadMapPrefab 함수 호출 (mapTid는 공백으로 전달)
-            LoadMapPrefab(mapTid);
-
-            Debug.Log($"맵 프리팹 로드 RPC 호출됨 - mapTid: '{mapTid}'");
         }
 
         public void LoadMapPrefab(string mapTid)

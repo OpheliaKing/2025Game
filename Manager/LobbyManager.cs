@@ -1,14 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
-using Photon.Realtime;
+using Fusion;
+using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace Shin
 {
-    public class LobbyManager : MonoBehaviourPunCallbacks
+    public class LobbyManager : MonoBehaviour
     {
         [Header("Options")]
         [SerializeField] private byte maxPlayersPerRoom = 2;
@@ -21,13 +21,13 @@ namespace Shin
         public UnityEvent onJoinedRoom;
         public UnityEvent onLeftRoom;
         public UnityEvent<string> onError;
-        public UnityEvent<List<RoomInfo>> onRoomListUpdatedEvent;
+        public UnityEvent<List<SessionInfo>> onRoomListUpdatedEvent;
         public UnityEvent<List<string>> onPlayerListUpdated;
 
-        private readonly Dictionary<string, RoomInfo> roomNameToInfo = new Dictionary<string, RoomInfo>();
+        private readonly Dictionary<string, SessionInfo> roomNameToInfo = new Dictionary<string, SessionInfo>();
 
-        public bool IsConnected => PhotonNetwork.IsConnected;
-        public bool InRoom => PhotonNetwork.InRoom;
+        public bool IsConnected => FindObjectOfType<NetworkRunner>()?.IsRunning == true;
+        public bool InRoom => FindObjectOfType<NetworkRunner>()?.IsCloudReady == true;
 
         [Header("UI")]
 
@@ -42,22 +42,34 @@ namespace Shin
         {
             if (roomManager == null)
             {
-                roomManager = GameObject.FindObjectOfType<RoomManager>();
+                var roomManagerObj = GameObject.Find("RoomUI");
+
+                if (roomManagerObj != null)
+                {
+                    roomManager = roomManagerObj.GetComponent<RoomManager>();
+                }                
             }
         }
 
         private void PushPlayersToRoomManager()
         {
+            Debug.Log("Test Room");
+
             EnsureRoomManager();
             if (roomManager != null)
             {
-                roomManager.UpdateRoomPlayers(PhotonNetwork.InRoom ? PhotonNetwork.PlayerList : null);
+                // Fusion에 맞는 UI 업데이트로 교체 필요
+                // roomManager에 적절한 업데이트 메서드가 있다면 여기서 호출하세요.
+         Debug.Log("Test Room2");
+                var ruuner = GameManager.Instance.NetworkManager.Runner;
+
+                roomManager.UpdateRoomPlayers(ruuner.IsConnectedToServer ? ruuner.ActivePlayers : null);
             }
         }
 
         private void Awake()
         {
-            PhotonNetwork.AutomaticallySyncScene = true;
+            // Fusion은 러너/씬 매니저가 동기화 처리
 
             if (GameManager.Instance != null)
             {
@@ -67,14 +79,10 @@ namespace Shin
 
         private void Start()
         {
-            if (!PhotonNetwork.IsConnected)
-            {
-                PhotonNetwork.ConnectUsingSettings();
-            }
-
+            // FusionBootstrap이 네트워크 시작을 관리. 여기서는 UI만 초기화
             InitTextSendButton();
             EnsureRoomManager();
-            roomManager.SetActive(false);
+            if (roomManager != null) roomManager.SetActive(false);
         }
 
         private void InitTextSendButton()
@@ -94,25 +102,7 @@ namespace Shin
         }
 
 
-        public override void OnConnectedToMaster()
-        {
-            onConnectedToMaster?.Invoke();
-            if (autoJoinLobby)
-            {
-                PhotonNetwork.JoinLobby();
-            }
-        }
-
-        public override void OnJoinedLobby()
-        {
-            onJoinedLobby?.Invoke();
-        }
-
-        public override void OnLeftLobby()
-        {
-            onLeftLobby?.Invoke();
-        }
-
+        // FusionBootstrap이 연결/세션을 관리. 필요 시 NetworkEvents에서 콜백 연결
         public void CreateRoom(string roomName)
         {
             if (string.IsNullOrWhiteSpace(roomName))
@@ -120,28 +110,45 @@ namespace Shin
                 onError?.Invoke("방 이름이 비어있습니다.");
                 return;
             }
-
-            RoomOptions options = new RoomOptions
-            {
-                MaxPlayers = maxPlayersPerRoom,
-                IsVisible = true,
-                IsOpen = true
-            };
-
-            if (!PhotonNetwork.CreateRoom(roomName, options, TypedLobby.Default))
-            {
-                onError?.Invoke("방 생성 요청에 실패했습니다.");
-            }
-            else
-            {
-                Debug.Log($"{roomName} 방 생성 성공");
-            }
+            StartCoroutine(StartHostSession(roomName));
         }
 
-        public override void OnCreateRoomFailed(short returnCode, string message)
+        private IEnumerator StartHostSession(string roomName)
         {
-            onError?.Invoke($"방 생성 실패 ({returnCode}): {message}");
+            var runner = FindObjectOfType<NetworkRunner>();
+            if (runner == null)
+            {
+                var go = new GameObject("NetworkRunner_Auto");
+                runner = go.AddComponent<NetworkRunner>();
+                // 씬 동기화가 필요하면 러너 프리팹에 SceneManager를 미리 추가하세요
+                DontDestroyOnLoad(go);
+            }
+
+            var sceneManager = runner.GetComponent<INetworkSceneManager>();
+            var startTask = runner.StartGame(new StartGameArgs
+            {
+                GameMode = GameMode.Host,
+                SessionName = roomName,
+                SceneManager = sceneManager
+            });
+
+            while (!startTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (startTask.IsFaulted)
+            {
+                onError?.Invoke($"방 생성 실패: {startTask.Exception?.GetBaseException().Message}");
+                yield break;
+            }
+
+            onJoinedRoom?.Invoke();
+            UpdatePlayerNicknameList();
+            PushPlayersToRoomManager();
         }
+
+        
 
         public void JoinRoom(string roomName)
         {
@@ -150,47 +157,26 @@ namespace Shin
                 onError?.Invoke("방 이름이 비어있습니다.");
                 return;
             }
-            if (!PhotonNetwork.JoinRoom(roomName))
-            {
-                onError?.Invoke("방 접속 요청에 실패했습니다.");
-            }
+            onError?.Invoke("FusionBootstrap UI에서 세션에 Join 하세요");
         }
 
         public void JoinRandomRoom()
         {
-            if (!PhotonNetwork.JoinRandomRoom())
-            {
-                onError?.Invoke("랜덤 방 접속 요청에 실패했습니다.");
-            }
+            onError?.Invoke("Fusion에서는 자동 매칭은 Runner.StartGame(GameMode.AutoHostOrClient) 사용");
         }
 
-        public override void OnJoinRandomFailed(short returnCode, string message)
-        {
-            onError?.Invoke($"랜덤 접속 실패 ({returnCode}): {message}");
-        }
+        
 
-        public override void OnJoinRoomFailed(short returnCode, string message)
-        {
-            onError?.Invoke($"방 접속 실패 ({returnCode}): {message}");
-        }
+        
 
-        public override void OnJoinedRoom()
+        public void OnJoinedSession()
         {
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
-            // 방 인원 제한 도달 시 방 닫기 처리 (마스터 전용)
-            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom != null)
-            {
-                if (PhotonNetwork.CurrentRoom.PlayerCount >= maxPlayersPerRoom)
-                {
-                    PhotonNetwork.CurrentRoom.IsOpen = false;
-                    PhotonNetwork.CurrentRoom.IsVisible = false;
-                }
-            }
             PushPlayersToRoomManager();
         }
 
-        public override void OnLeftRoom()
+        public void OnLeftSession()
         {
             onLeftRoom?.Invoke();
             PushPlayersToRoomManager();
@@ -198,36 +184,19 @@ namespace Shin
 
         public void LeaveRoom()
         {
-            if (PhotonNetwork.InRoom)
+            // FusionBootstrap 메뉴를 통해 세션 종료 권장
+            EnsureRoomManager();
+            if (roomManager != null)
             {
-                PhotonNetwork.LeaveRoom();
-                EnsureRoomManager();
-                if (roomManager != null)
-                {
-                    roomManager.SetActive(false);
-                }
+                roomManager.SetActive(false);
             }
         }
 
-        public override void OnRoomListUpdate(List<RoomInfo> roomList)
-        {
-            foreach (var info in roomList)
-            {
-                if (info.RemovedFromList || info.PlayerCount == 0)
-                {
-                    roomNameToInfo.Remove(info.Name);
-                }
-                else
-                {
-                    roomNameToInfo[info.Name] = info;
-                }
-            }
-            onRoomListUpdatedEvent?.Invoke(new List<RoomInfo>(roomNameToInfo.Values));
-        }
+        // 세션 리스트 업데이트는 NetworkEvents 또는 별도 브라우저에서 처리
 
-        public IReadOnlyList<RoomInfo> GetCachedRoomList()
+        public IReadOnlyList<SessionInfo> GetCachedRoomList()
         {
-            return new List<RoomInfo>(roomNameToInfo.Values);
+            return new List<SessionInfo>(roomNameToInfo.Values);
         }
 
         public void SetLocalNickname(string nickname)
@@ -237,52 +206,31 @@ namespace Shin
                 onError?.Invoke("닉네임이 비어있습니다.");
                 return;
             }
-            PhotonNetwork.NickName = nickname;
+            // Fusion은 닉네임을 커스텀 데이터로 관리. Runner/PlayerRef 확장으로 설정 권장
         }
 
         private void UpdatePlayerNicknameList()
         {
-            if (!PhotonNetwork.InRoom)
+            if (!InRoom)
             {
                 onPlayerListUpdated?.Invoke(new List<string>());
                 return;
             }
 
             List<string> nicknames = new List<string>();
-            foreach (var player in PhotonNetwork.PlayerList)
-            {
-                nicknames.Add(string.IsNullOrEmpty(player.NickName) ? $"Player_{player.ActorNumber}" : player.NickName);
-            }
+            // Fusion: PlayerRef에 닉네임 보관 로직 필요
             onPlayerListUpdated?.Invoke(nicknames);
         }
 
-        public override void OnPlayerEnteredRoom(Photon.Realtime.Player newPlayer)
+        public void OnPlayerJoined()
         {
             UpdatePlayerNicknameList();
-            // 최대 인원 도달 시 방 닫기 (마스터만 처리)
-            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom != null)
-            {
-                if (PhotonNetwork.CurrentRoom.PlayerCount >= maxPlayersPerRoom)
-                {
-                    PhotonNetwork.CurrentRoom.IsOpen = false;
-                    PhotonNetwork.CurrentRoom.IsVisible = false;
-                }
-            }
             PushPlayersToRoomManager();
         }
 
-        public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
+        public void OnPlayerLeft()
         {
             UpdatePlayerNicknameList();
-            // 인원 감소 시 방 다시 열기 (마스터만 처리)
-            if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom != null)
-            {
-                if (PhotonNetwork.CurrentRoom.PlayerCount < maxPlayersPerRoom)
-                {
-                    PhotonNetwork.CurrentRoom.IsOpen = true;
-                    PhotonNetwork.CurrentRoom.IsVisible = true;
-                }
-            }
             PushPlayersToRoomManager();
         }
 

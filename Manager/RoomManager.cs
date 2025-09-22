@@ -1,8 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
-using Photon.Realtime;
+using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -11,11 +10,11 @@ namespace Shin
     public class RoomManager : MonoBehaviour
     {
         [Header("Events")]
-        public UnityEvent<List<string>> onPlayersUpdated;
+        public UnityEvent<List<PlayerRef>> onPlayersUpdated;
 
-        private readonly List<string> _currentPlayerNicknames = new List<string>();
+        private readonly List<PlayerRef> _currentPlayerNicknames = new List<PlayerRef>();
 
-        public IReadOnlyList<string> CurrentPlayerNicknames => _currentPlayerNicknames;
+        public IReadOnlyList<PlayerRef> CurrentPlayerNicknames => _currentPlayerNicknames;
 
         [Header("Player INfo UI")]
 
@@ -23,8 +22,8 @@ namespace Shin
         private Transform _playerInfoUIParent;
         private List<RoomUIPlayerInfo> _playerInfoUIList = new List<RoomUIPlayerInfo>();
 
-        // LobbyManager에서 호출: 현재 방의 플레이어 배열을 받아 UI/로직 갱신
-        public void UpdateRoomPlayers(Photon.Realtime.Player[] players)
+        // Fusion 호환: 닉네임 컬렉션을 받아 UI/로직 갱신
+        public void UpdateRoomPlayers(IEnumerable<PlayerRef> playerNicknames)
         {
             if (!gameObject.activeSelf)
             {
@@ -32,16 +31,11 @@ namespace Shin
             }
 
             _currentPlayerNicknames.Clear();
-            if (players != null)
+            if (playerNicknames != null)
             {
-                for (int i = 0; i < players.Length; i++)
-                {
-                    var p = players[i];
-                    string nick = string.IsNullOrEmpty(p.NickName) ? $"Player_{p.ActorNumber}" : p.NickName;
-                    _currentPlayerNicknames.Add(nick);
-                }
+                _currentPlayerNicknames.AddRange(playerNicknames);
             }
-            onPlayersUpdated?.Invoke(new List<string>(_currentPlayerNicknames));
+            onPlayersUpdated?.Invoke(new List<PlayerRef>(_currentPlayerNicknames));
 
             UpdatePlayerUI();
         }
@@ -79,19 +73,14 @@ namespace Shin
 
             for (int i = 0; i < CurrentPlayerNicknames.Count; i++)
             {
-                _playerInfoUIList[i].UpdateInfo(CurrentPlayerNicknames[i]);
+                _playerInfoUIList[i].UpdateInfo(CurrentPlayerNicknames[i].PlayerId.ToString());
             }
         }
 
-        // 필요 시 수동 갱신: Photon 상태에서 직접 읽어 반영
-        public void RefreshFromPhoton()
+        // 필요 시 수동 갱신: Fusion 기준으로 구현 지점
+        public void RefreshFromFusion()
         {
-            if (!PhotonNetwork.InRoom)
-            {
-                UpdateRoomPlayers(null);
-                return;
-            }
-            UpdateRoomPlayers(PhotonNetwork.PlayerList);
+            UpdateRoomPlayers(null);
         }
 
         public void GameStart()

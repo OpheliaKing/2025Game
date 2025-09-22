@@ -1,14 +1,12 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
-using UnityEngine.TextCore.Text;
-using Photon.Pun;
-using Photon.Realtime;
 
 namespace Shin
 {
-    public partial class InGamePlayerInfo : MonoBehaviourPunCallbacks
+    //PhotonObject
+    public partial class InGamePlayerInfo : NetworkBehaviour
     {
         [SerializeField]
         private CharacterUnit _playerUnit;
@@ -22,7 +20,7 @@ namespace Shin
         {
             get
             {
-                return PlayerUnit.photonView.IsMine;
+                return PlayerUnit.NetworkObject.HasInputAuthority;
             }
         }
 
@@ -54,8 +52,8 @@ namespace Shin
         /// <summary>
         /// 다른 플레이어로부터 게임 데이터를 받는 RPC 메서드
         /// </summary>
-        [PunRPC]
-        private void ReceiveGameData(string gameDataJson)
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        private void ReceiveGameDataRPC(string gameDataJson)
         {
             try
             {
@@ -94,42 +92,25 @@ namespace Shin
         /// <summary>
         /// 방에 입장했을 때 기존 플레이어들의 데이터 요청
         /// </summary>
-        public override void OnJoinedRoom()
-        {
-            base.OnJoinedRoom();
-            // 기존 플레이어들에게 데이터 요청
-            if (PhotonNetwork.PlayerList.Length > 1)
-            {
-                photonView.RPC("RequestGameData", RpcTarget.Others);
-            }
-        }
+        // Fusion에서는 INetworkRunnerCallbacks.OnPlayerJoined 등에서 처리합니다.
 
         /// <summary>
         /// 다른 플레이어가 방에 입장했을 때 데이터 요청을 받는 RPC
         /// </summary>
-        [PunRPC]
-        private void RequestGameData()
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        private void RequestGameDataRPC()
         {
             // 요청한 플레이어에게 현재 데이터 전송
             if (_localGameData.selectedStage.stageId != "" && _localGameData.selectedCharacter.characterId != "")
             {
-                photonView.RPC("ReceiveGameData", RpcTarget.Others, JsonUtility.ToJson(_localGameData));
+                ReceiveGameDataRPC(JsonUtility.ToJson(_localGameData));
             }
         }
 
         /// <summary>
         /// 플레이어가 방을 떠났을 때 해당 플레이어의 데이터 제거
         /// </summary>
-        public override void OnPlayerLeftRoom(Photon.Realtime.Player otherPlayer)
-        {
-            base.OnPlayerLeftRoom(otherPlayer);
-
-            if (_playerGameData.ContainsKey(otherPlayer.UserId))
-            {
-                _playerGameData.Remove(otherPlayer.UserId);
-                Debug.Log($"플레이어 {otherPlayer.NickName}의 게임 데이터 제거됨");
-            }
-        }
+        // 플레이어 퇴장 처리는 INetworkRunnerCallbacks.OnPlayerLeft에서 PlayerRef 기반으로 구현하세요.
 
 
         #endregion
@@ -144,9 +125,10 @@ namespace Shin
         public void LoadPlayerPrefab(string playerTid)
         {
             var resourceManager = GameManager.Instance.ResourceManager;
-            if (!PhotonNetwork.InRoom)
+            var runner = FindObjectOfType<NetworkRunner>();
+            if (runner == null || !runner.IsRunning)
             {
-                Debug.LogWarning("포톤 룸에 접속되어 있지 않아 네트워크 인스턴스 생성을 진행할 수 없습니다.");
+                Debug.LogWarning("NetworkRunner가 실행 중이 아닙니다. 스폰을 진행할 수 없습니다.");
                 return;
             }
 
@@ -158,30 +140,23 @@ namespace Shin
                 return;
             }
 
-            // PhotonNetwork.Instantiate는 Resources 상대 경로 문자열을 요구하므로 경로를 구성
-            string basePath = resourceManager.CharacterPrefabPath?.Trim('/', '\\') ?? string.Empty;
-            string namePart = playerTid?.Trim('/', '\\') ?? string.Empty;
-            string resourcePath = string.IsNullOrEmpty(basePath) ? namePart : ($"{basePath}/{namePart}");
-
-            // 네트워크 인스턴스 생성 (기본 위치/회전으로 배치)
-            GameObject networkObj = PhotonNetwork.Instantiate(resourcePath, Vector3.zero, Quaternion.identity);
-            if (networkObj == null)
+            // Fusion 스폰 (프리팹은 NetworkObject 필요)
+            var spawned = runner.Spawn(obj.NetworkObject, Vector3.zero, Quaternion.identity, runner.LocalPlayer);
+            if (spawned == null)
             {
-                Debug.LogError($"포톤 인스턴스 생성 실패: {resourcePath}");
+                Debug.LogError("Fusion 스폰 실패");
                 return;
             }
 
             // 생성된 객체에서 캐릭터 유닛 참조 캐싱
+            GameObject networkObj = spawned.gameObject;
             _playerUnit = networkObj.GetComponent<CharacterUnit>();
             if (_playerUnit == null)
             {
                 Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
             }
 
-            Debug.Log($"{networkObj.name} 네트워크 생성 완료 ({resourcePath})");
-
-            var number = PhotonNetwork.LocalPlayer.ActorNumber;
-            networkObj.transform.position = new Vector3(number, 1f, 0f);
+            Debug.Log($"{networkObj.name} 네트워크 생성 완료 (Fusion)");
         }
     }
 }

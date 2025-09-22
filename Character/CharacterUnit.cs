@@ -1,9 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using Shin;
-using UnityEngine.Rendering;
 
 namespace Shin
 {
@@ -103,24 +99,10 @@ namespace Shin
         #endregion
 
 
-        private void Update()
+        private void FixedUpdate()
         {
             MoveUnitUpdate();
             UpdateAIState();
-            Test();
-        }
-
-        private void Test()
-        {
-            if (photonView.IsMine)
-            {
-                if (Input.GetKey(KeyCode.T))
-                {
-                    var speed = UnityEngine.Random.Range(0.001f, 0.005f);
-                    transform.position = new Vector3(Tr.position.x + speed, Tr.position.y, Tr.position.z);
-                }
-
-            }
         }
 
         //FSM
@@ -178,8 +160,12 @@ namespace Shin
 
         private void UpdateCheckGround(bool isGround)
         {
+            Debug.Log($"Ground Check ::: Is Ground : {isGround}");
+
             if (_isGrounded != isGround)
             {
+                Debug.Log($"Ground Check ::: Is Ground Invoke : {isGround}");
+
                 OnChangeGroundState?.Invoke(isGround);
             }
 

@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
+using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -32,10 +32,11 @@ namespace Shin
 			StopActiveLoadIfAny();
 			onBeforeSceneLoad?.Invoke(sceneName);
 
-			// 방 안이고 옵션이 켜져있으면 Photon으로 로드 (AutomaticallySyncScene 필요)
-			if (usePhotonLoadWhenInRoom && PhotonNetwork.InRoom)
+			// FusionBootstrap + NetworkSceneManagerDefault 사용 시 러너가 씬 동기화를 처리
+			var runner = FindObjectOfType<NetworkRunner>();
+			if (usePhotonLoadWhenInRoom && runner != null && runner.IsRunning)
 			{
-				PhotonNetwork.LoadLevel(sceneName);
+				// Fusion 씬은 러너 시작 시 설정된 SceneManager가 관리하므로 여기서는 로컬 후크만 호출
 				onLoadProgress?.Invoke(1f);
 				onAfterSceneLoad?.Invoke(sceneName);
 				loadComplete?.Invoke();

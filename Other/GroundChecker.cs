@@ -19,6 +19,8 @@ public class GroundChecker : MonoBehaviour
     
     private void OnTriggerEnter2D(Collider2D other)
     {
+        Debug.Log("Ground Checker");
+
         if (other.gameObject.layer == GroundLayer)
         {
             OnGroundEvent?.Invoke(true);

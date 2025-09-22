@@ -6,7 +6,7 @@ namespace Shin
 {
     public partial class InGamePlayerInfo
     {
-                private Vector2 _moveInput;
+        private Vector2 _moveInput;
 
         public void SetPlayerMoveVector(Vector2 vector)
         {

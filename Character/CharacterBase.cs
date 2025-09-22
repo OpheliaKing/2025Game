@@ -1,14 +1,32 @@
 using System.Collections;
 using System.Collections.Generic;
-using Photon.Pun;
+using Fusion;
 using UnityEngine;
+
+
 
 namespace Shin
 {
-    public class CharacterBase : MonoBehaviourPunCallbacks
+    //Photon Object
+    public class CharacterBase : FusionMonoBehaviour
     {
         protected float _currentHp;
         protected float _maxHp;
+
+        private NetworkObject _netWorkObject;
+
+        public NetworkObject NetworkObject
+        {
+            get
+            {
+                if (_netWorkObject == null)
+                {
+                    _netWorkObject = GetComponent<NetworkObject>();
+                }
+
+                return _netWorkObject;
+            }
+        }
 
         public float GetCurrentHp()
         {
