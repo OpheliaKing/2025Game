@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 using UnityEngine.Events;
@@ -30,6 +31,13 @@ namespace Shin
                 SetActive(true);
             }
 
+            Debug.Log("Test 12345");
+
+            if (playerNicknames != null)
+            {
+                Debug.Log($"123Test {playerNicknames.Count(x => x != null)}");
+            }            
+        
             _currentPlayerNicknames.Clear();
             if (playerNicknames != null)
             {

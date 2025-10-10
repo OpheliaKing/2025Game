@@ -57,7 +57,12 @@ namespace Shin
             yield return new WaitForSeconds(1f);
             GameManager.Instance.UImanager.Clear();
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
-            InGameManager.Instance.StartGame(null);
+
+
+             GameManager.Instance.SceneController.LoadScene("InGameScene",()=>{
+InGameManager.Instance.StartGame(null);
+             });
+            
         }
 
         // INetworkRunnerCallbacks 구현 (필요 메서드만 스텁)
@@ -76,8 +81,20 @@ namespace Shin
         public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
         public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
         public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
-        public void OnSceneLoadDone(NetworkRunner runner) { }
-        public void OnSceneLoadStart(NetworkRunner runner) { }
+        public void OnSceneLoadDone(NetworkRunner runner) 
+        { 
+            Debug.Log("NetworkManager: 씬 로드 완료");
+            // SceneController에 씬 로드 완료 알림
+            if (GameManager.Instance?.SceneController != null)
+            {
+                GameManager.Instance.SceneController.OnNetworkSceneLoadDone();
+            }
+        }
+        
+        public void OnSceneLoadStart(NetworkRunner runner) 
+        { 
+            Debug.Log("NetworkManager: 씬 로드 시작");
+        }
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
     }

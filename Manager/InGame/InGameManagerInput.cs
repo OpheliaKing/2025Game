@@ -2,9 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+//해당 스크립트는 삭제
+
 namespace Shin
 {
-    public  class InGameManagerInput : MonoBehaviour
+    public class InGameManagerInput : MonoBehaviour
     {
         private Vector2 _moveInput;
 

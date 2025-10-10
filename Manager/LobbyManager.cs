@@ -26,8 +26,8 @@ namespace Shin
 
         private readonly Dictionary<string, SessionInfo> roomNameToInfo = new Dictionary<string, SessionInfo>();
 
-        public bool IsConnected => FindObjectOfType<NetworkRunner>()?.IsRunning == true;
-        public bool InRoom => FindObjectOfType<NetworkRunner>()?.IsCloudReady == true;
+        public bool IsConnected => GameManager.Instance.NetworkManager.Runner.IsRunning == true;
+        public bool InRoom => GameManager.Instance.NetworkManager.Runner.IsCloudReady == true;
 
         [Header("UI")]
 
@@ -60,10 +60,8 @@ namespace Shin
             {
                 // Fusion에 맞는 UI 업데이트로 교체 필요
                 // roomManager에 적절한 업데이트 메서드가 있다면 여기서 호출하세요.
-         Debug.Log("Test Room2");
                 var ruuner = GameManager.Instance.NetworkManager.Runner;
-
-                roomManager.UpdateRoomPlayers(ruuner.IsConnectedToServer ? ruuner.ActivePlayers : null);
+                roomManager.UpdateRoomPlayers(ruuner.IsRunning ? ruuner.ActivePlayers : null);
             }
         }
 
@@ -115,13 +113,11 @@ namespace Shin
 
         private IEnumerator StartHostSession(string roomName)
         {
-            var runner = FindObjectOfType<NetworkRunner>();
+            var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
-                var go = new GameObject("NetworkRunner_Auto");
-                runner = go.AddComponent<NetworkRunner>();
-                // 씬 동기화가 필요하면 러너 프리팹에 SceneManager를 미리 추가하세요
-                DontDestroyOnLoad(go);
+                Debug.Log("Runner Null");
+                yield return null;
             }
 
             var sceneManager = runner.GetComponent<INetworkSceneManager>();

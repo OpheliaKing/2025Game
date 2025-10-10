@@ -48,9 +48,7 @@ namespace Shin
 
         public void StartGame(StageData data)
         {
-            StageInit("Stage_0001");
-
-            
+            StageInit("Stage_0001");            
         }
 
         private void StageInit(string stageTid)
