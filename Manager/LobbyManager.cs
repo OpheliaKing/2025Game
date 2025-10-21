@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace Shin
 {
@@ -47,7 +49,7 @@ namespace Shin
                 if (roomManagerObj != null)
                 {
                     roomManager = roomManagerObj.GetComponent<RoomManager>();
-                }                
+                }
             }
         }
 
@@ -144,7 +146,7 @@ namespace Shin
             PushPlayersToRoomManager();
         }
 
-        
+
 
         public void JoinRoom(string roomName)
         {
@@ -153,20 +155,47 @@ namespace Shin
                 onError?.Invoke("방 이름이 비어있습니다.");
                 return;
             }
-            onError?.Invoke("FusionBootstrap UI에서 세션에 Join 하세요");
+            StartCoroutine(StartClientSession(roomName));
         }
 
-        public void JoinRandomRoom()
+        private IEnumerator StartClientSession(string roomName)
         {
-            onError?.Invoke("Fusion에서는 자동 매칭은 Runner.StartGame(GameMode.AutoHostOrClient) 사용");
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            if (runner == null)
+            {
+                Debug.Log("Runner Null");
+                onError?.Invoke("네트워크 러너가 초기화되지 않았습니다.");
+                yield return null;
+            }
+
+            var sceneManager = runner.GetComponent<INetworkSceneManager>();
+            var startTask = runner.StartGame(new StartGameArgs
+            {
+                GameMode = GameMode.Client,
+                SessionName = roomName,
+                SceneManager = sceneManager
+            });
+
+            while (!startTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (startTask.IsFaulted)
+            {
+                onError?.Invoke($"방 입장 실패: {startTask.Exception?.GetBaseException().Message}");
+                yield break;
+            }
+
+            onJoinedRoom?.Invoke();
+            UpdatePlayerNicknameList();
+            PushPlayersToRoomManager();
         }
-
-        
-
-        
 
         public void OnJoinedSession()
         {
+            Debug.Log("Check Join");
+
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
@@ -230,11 +259,135 @@ namespace Shin
             PushPlayersToRoomManager();
         }
 
+        // 포톤퓨전에서 플레이어가 방에 입장할 때마다 호출되는 RPC 함수
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void OnPlayerJoinedSession(PlayerRef player)
+        {
+            Debug.Log($"플레이어 {player}가 세션에 입장했습니다.");
+
+            // 플레이어 입장 시 처리할 로직
+            UpdatePlayerNicknameList();
+            PushPlayersToRoomManager();
+
+            // 추가적인 플레이어 입장 이벤트 발생
+            onPlayerJoined?.Invoke();
+        }
+
+        // 포톤퓨전에서 플레이어가 방을 떠날 때마다 호출되는 RPC 함수
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void OnPlayerLeftSession(PlayerRef player)
+        {
+            Debug.Log($"플레이어 {player}가 세션을 떠났습니다.");
+
+            // 플레이어 퇴장 시 처리할 로직
+            UpdatePlayerNicknameList();
+            PushPlayersToRoomManager();
+
+            // 추가적인 플레이어 퇴장 이벤트 발생
+            onPlayerLeft?.Invoke();
+        }
+
+
+        // 플레이어 입장/퇴장 이벤트
+        public UnityEvent onPlayerJoined;
+        public UnityEvent onPlayerLeft;
+
+        // 포톤퓨전에서 플레이어 입장을 감지하는 메서드
+        // 이 메서드는 NetworkManager나 다른 네트워크 컴포넌트에서 호출되어야 합니다
+        public void HandlePlayerJoined(PlayerRef player)
+        {
+            Debug.Log($"Lobby Manager : 플레이어 {player}가 방에 입장했습니다.");
+
+            // RPC로 모든 클라이언트에게 플레이어 입장 알림
+            if (GameManager.Instance?.NetworkManager?.Runner != null)
+            {
+                OnPlayerJoinedSession(player);
+            }
+        }
+
+        // 포톤퓨전에서 플레이어 퇴장을 감지하는 메서드
+        // 이 메서드는 NetworkManager나 다른 네트워크 컴포넌트에서 호출되어야 합니다
+        public void HandlePlayerLeft(PlayerRef player)
+        {
+            Debug.Log($"플레이어 {player}가 방을 떠났습니다.");
+
+            // RPC로 모든 클라이언트에게 플레이어 퇴장 알림
+            if (GameManager.Instance?.NetworkManager?.Runner != null)
+            {
+                OnPlayerLeftSession(player);
+            }
+        }
+
+        // RPC 호출을 위한 헬퍼 함수들
+        public void BroadcastPlayerJoined(PlayerRef player)
+        {
+            if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+            {
+                OnPlayerJoinedSession(player);
+            }
+        }
+
+        public void BroadcastPlayerLeft(PlayerRef player)
+        {
+            if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+            {
+                OnPlayerLeftSession(player);
+            }
+        }
+
+        // 포톤퓨전 러너의 플레이어 리스트를 주기적으로 체크하는 메서드
+        private void CheckPlayerChanges()
+        {
+            if (!InRoom) return;
+
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            if (runner != null && runner.ActivePlayers != null)
+            {
+                // 현재 활성 플레이어 수가 변경되었는지 확인
+                int currentPlayerCount = runner.ActivePlayers.Count();
+
+                // 이전 플레이어 수와 비교하여 변경사항 감지
+                // 실제 구현에서는 이전 상태를 저장하고 비교해야 합니다
+                UpdatePlayerNicknameList();
+                PushPlayersToRoomManager();
+            }
+        }
+
         public void GameStart()
         {
-            GameManager.Instance.NetworkManager.GameStart();
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            var sceneManager = runner.GetComponent<INetworkSceneManager>();
+            var parameters = new NetworkLoadSceneParameters { };
+
+
+runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
+
+            //sceneManager.LoadScene(SceneRef.FromIndex(GetSceneIndex("InGameScene")), parameters);
+
+            //ceneManager.LoadSceneAsync(1,LoadSceneMode.Additive);
+
+            //GameManager.Instance.NetworkManager.GameStart();
         }
+
+        //아래 삭제
+
+        private int GetSceneIndex(string sceneName)
+        {
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+            {
+                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+                string sceneNameFromPath = System.IO.Path.GetFileNameWithoutExtension(scenePath);
+                if (sceneNameFromPath == sceneName)
+                {
+                    return i;
+                }
+            }
+            Debug.LogError($"씬을 찾을 수 없습니다: {sceneName}");
+            return 0;
+        }
+
     }
 }
+
 
 
