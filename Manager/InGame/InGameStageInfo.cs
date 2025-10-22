@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using Unity.VisualScripting;
+using System;
 
 namespace Shin
 {
@@ -139,7 +140,7 @@ namespace Shin
             }
         }
 
-        public void LoadMapPrefab(string mapTid)
+        public void LoadMapPrefab(string mapTid, Action onComplete = null)
         {
             var data = StageSO.FindStageById(mapTid);
 
@@ -151,6 +152,7 @@ namespace Shin
             var obj = resourceManager.InstantiatePrefab<GameObject>(data.prefabPath, null, resourceManager.PrefabBasePath);
 
             Debug.Log($"{obj.gameObject.name} 생성 완료");
+            onComplete?.Invoke();
         }
     }
 }

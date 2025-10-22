@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Shin
@@ -46,14 +47,14 @@ namespace Shin
             //MoveInputUpdate();
         }
 
-        public void StartGame(StageData data)
+        public void StartGame(StageData data,Action onComplete = null)
         {
-            StageInit("Stage_0001");            
+            //StageInit("Stage_0001",onComplete);            
         }
 
-        private void StageInit(string stageTid)
+        public void StageInit(string stageTid,Action onComplete = null)
         {
-            StageInfo.LoadMapPrefab(stageTid);
+            StageInfo.LoadMapPrefab(stageTid,onComplete);
             SpawnCharacter("PlayerBase");
         }
 

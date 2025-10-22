@@ -353,39 +353,38 @@ namespace Shin
             }
         }
 
-        public void GameStart()
-        {
-            var runner = GameManager.Instance.NetworkManager.Runner;
-            var sceneManager = runner.GetComponent<INetworkSceneManager>();
-            var parameters = new NetworkLoadSceneParameters { };
+//         public void RpcGameStart()
+//         {
+//             var runner = GameManager.Instance.NetworkManager.Runner;
+
+// Debug.Log($"runner is running: {runner.IsRunning}");
+
+//             GameManager.Instance.NetworkManager.RpcTestLog();
+//             Debug.Log("RpcGameStart Run!!!");
+
+//             GameManager.Instance.NetworkManager.RpcGameStart();
+
+            
+
+//             Debug.Log($"runner is running: {runner.IsRunning}");
 
 
-runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
+//             if (GameManager.Instance.NetworkManager.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+//             {
+//                 Debug.Log("networkmanager runner is running");
 
-            //sceneManager.LoadScene(SceneRef.FromIndex(GetSceneIndex("InGameScene")), parameters);
+//                 GameManager.Instance.NetworkManager.RpcTestLog();
+//             }
+//             else
+//             {
+//                 Debug.LogError("NetworkRunner is not running");
+//             }
 
-            //ceneManager.LoadSceneAsync(1,LoadSceneMode.Additive);
-
-            //GameManager.Instance.NetworkManager.GameStart();
-        }
-
-        //아래 삭제
-
-        private int GetSceneIndex(string sceneName)
-        {
-            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
-            {
-                string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
-                string sceneNameFromPath = System.IO.Path.GetFileNameWithoutExtension(scenePath);
-                if (sceneNameFromPath == sceneName)
-                {
-                    return i;
-                }
-            }
-            Debug.LogError($"씬을 찾을 수 없습니다: {sceneName}");
-            return 0;
-        }
-
+//             // var runner = GameManager.Instance.NetworkManager.Runner;
+//             // var sceneManager = runner.GetComponent<INetworkSceneManager>();
+//             // var parameters = new NetworkLoadSceneParameters { };
+//             // runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
+//         }
     }
 }
 

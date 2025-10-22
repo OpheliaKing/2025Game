@@ -93,7 +93,8 @@ namespace Shin
 
         public void GameStart()
         {
-            GameManager.Instance.LobbyManager.GameStart();
+            GameManager.Instance.NetworkManager.Test();
+            GameManager.Instance.NetworkManager.RpcGameStart();
         }
 
         public void SetActive(bool isActive)
