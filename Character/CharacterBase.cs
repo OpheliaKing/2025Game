@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Shin
 {
     //Photon Object
-    public class CharacterBase : FusionMonoBehaviour
+    public class CharacterBase : NetworkBehaviour
     {
         protected float _currentHp;
         protected float _maxHp;
@@ -36,6 +36,11 @@ namespace Shin
         public float GetMaxHp()
         {
             return _maxHp;
+        }
+
+        public NetworkId GetNetworkId()
+        {
+            return Object.Id;  // NetworkBehaviour의 Object 프로퍼티 사용
         }
     }
 
