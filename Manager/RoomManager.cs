@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Fusion;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace Shin
 {
@@ -23,6 +25,10 @@ namespace Shin
         private Transform _playerInfoUIParent;
         private List<RoomUIPlayerInfo> _playerInfoUIList = new List<RoomUIPlayerInfo>();
 
+
+        [SerializeField]
+        private TextMeshProUGUI _textMeshProUGUI;
+
         // Fusion 호환: 닉네임 컬렉션을 받아 UI/로직 갱신
         public void UpdateRoomPlayers(IEnumerable<PlayerRef> playerNicknames)
         {
@@ -36,8 +42,8 @@ namespace Shin
             if (playerNicknames != null)
             {
                 Debug.Log($"123Test {playerNicknames.Count(x => x != null)}");
-            }            
-        
+            }
+
             _currentPlayerNicknames.Clear();
             if (playerNicknames != null)
             {
@@ -93,13 +99,34 @@ namespace Shin
 
         public void GameStart()
         {
-            GameManager.Instance.NetworkManager.Test();
-            GameManager.Instance.NetworkManager.RpcGameStart();
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            if (runner != null && runner.IsRunning)
+            {
+                GameManager.Instance.NetworkManager.Test();
+                NetworkManager.RpcGameStart(runner);
+            }
+            else
+            {
+                Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
+            }
         }
 
         public void SetActive(bool isActive)
         {
             gameObject.SetActive(isActive);
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                GameManager.Instance.NetworkManager.Test();
+            }
+        }
+        
+        public void TestPush()
+        {
+            _textMeshProUGUI.text = "Test Push";
         }
     }
 }

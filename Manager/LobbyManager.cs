@@ -40,6 +40,8 @@ namespace Shin
         [SerializeField]
         private RoomManager roomManager;
 
+        public RoomManager RoomManager => roomManager;
+
         private void EnsureRoomManager()
         {
             if (roomManager == null)
@@ -119,7 +121,7 @@ namespace Shin
             if (runner == null)
             {
                 Debug.Log("Runner Null");
-                yield return null;
+                yield break;
             }
 
             var sceneManager = runner.GetComponent<INetworkSceneManager>();
@@ -353,38 +355,38 @@ namespace Shin
             }
         }
 
-//         public void RpcGameStart()
-//         {
-//             var runner = GameManager.Instance.NetworkManager.Runner;
+        //         public void RpcGameStart()
+        //         {
+        //             var runner = GameManager.Instance.NetworkManager.Runner;
 
-// Debug.Log($"runner is running: {runner.IsRunning}");
+        // Debug.Log($"runner is running: {runner.IsRunning}");
 
-//             GameManager.Instance.NetworkManager.RpcTestLog();
-//             Debug.Log("RpcGameStart Run!!!");
+        //             GameManager.Instance.NetworkManager.RpcTestLog();
+        //             Debug.Log("RpcGameStart Run!!!");
 
-//             GameManager.Instance.NetworkManager.RpcGameStart();
-
-            
-
-//             Debug.Log($"runner is running: {runner.IsRunning}");
+        //             GameManager.Instance.NetworkManager.RpcGameStart();
 
 
-//             if (GameManager.Instance.NetworkManager.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-//             {
-//                 Debug.Log("networkmanager runner is running");
 
-//                 GameManager.Instance.NetworkManager.RpcTestLog();
-//             }
-//             else
-//             {
-//                 Debug.LogError("NetworkRunner is not running");
-//             }
+        //             Debug.Log($"runner is running: {runner.IsRunning}");
 
-//             // var runner = GameManager.Instance.NetworkManager.Runner;
-//             // var sceneManager = runner.GetComponent<INetworkSceneManager>();
-//             // var parameters = new NetworkLoadSceneParameters { };
-//             // runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
-//         }
+
+        //             if (GameManager.Instance.NetworkManager.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+        //             {
+        //                 Debug.Log("networkmanager runner is running");
+
+        //                 GameManager.Instance.NetworkManager.RpcTestLog();
+        //             }
+        //             else
+        //             {
+        //                 Debug.LogError("NetworkRunner is not running");
+        //             }
+
+        //             // var runner = GameManager.Instance.NetworkManager.Runner;
+        //             // var sceneManager = runner.GetComponent<INetworkSceneManager>();
+        //             // var parameters = new NetworkLoadSceneParameters { };
+        //             // runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
+        //         }
     }
 }
 
