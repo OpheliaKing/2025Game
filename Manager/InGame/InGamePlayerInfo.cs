@@ -214,13 +214,13 @@ namespace Shin
             GameObject networkObj = spawned.gameObject;
 
             //여기 부분 주석 처리 후 문제 해결 시 아래 코드 삭제
-            //_playerUnit = networkObj.GetComponent<CharacterUnit>();
-            if (_playerUnit == null)
+            var createPlayerUnit = networkObj.GetComponent<CharacterUnit>();
+            if (createPlayerUnit == null)
             {
                 Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
             }
 
-            RpcGrantCharacterControll(targetPlayer, _playerUnit.GetNetworkId());
+            RpcGrantCharacterControll(targetPlayer, createPlayerUnit.GetNetworkId());
 
             Debug.Log($"{networkObj.name} 네트워크 생성 완료 (Fusion), InputAuthority: {targetPlayer}");
         }
