@@ -208,8 +208,13 @@ namespace Shin
 
             // 생성된 객체에서 캐릭터 유닛 참조 캐싱 (스폰한 플레이어의 인스턴스에서만)
             // Spawned() 콜백에서도 처리할 수 있음
+
+            Debug.Log($"Test Player Spawned {spawned.name}");
+
             GameObject networkObj = spawned.gameObject;
-            _playerUnit = networkObj.GetComponent<CharacterUnit>();
+
+            //여기 부분 주석 처리 후 문제 해결 시 아래 코드 삭제
+            //_playerUnit = networkObj.GetComponent<CharacterUnit>();
             if (_playerUnit == null)
             {
                 Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
