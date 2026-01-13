@@ -195,12 +195,14 @@ namespace Shin
 
             // Fusion 스폰 (서버만 가능)
             var spawned = runner.Spawn(obj.NetworkObject, Vector3.zero, Quaternion.identity, targetPlayer);
+            spawned.Object.HasStateAuthority = true;
             if (spawned == null)
             {
                 Debug.LogError("Fusion 스폰 실패");
                 return;
             }
 
+spawned.Object.HasStateAuthority = true;
             // 생성된 객체에서 캐릭터 유닛 참조 캐싱 (스폰한 플레이어의 인스턴스에서만)
             // Spawned() 콜백에서도 처리할 수 있음
 
@@ -247,6 +249,14 @@ namespace Shin
                 // State Authority를 가진 클라이언트(서버/호스트)에게 MasterPlayerId 설정 요청
                 RpcSetMasterPlayerId(charUuid, playerRef.PlayerId.ToString());
             }
+        }
+
+        /// <summary>
+        /// 클라이언트에서 MasterPlayerId 변경을 요청하는 공개 메서드
+        /// </summary>
+        public void RequestSetMasterPlayerId(NetworkId charUuid, string masterPlayerId)
+        {
+            RpcSetMasterPlayerId(charUuid, masterPlayerId);
         }
 
         /// <summary>

@@ -66,51 +66,6 @@ namespace Shin
 
         public override void FixedUpdateNetwork()
         {
-            // ============================================
-            // Photon Fusion 디버그 출력 방법들
-            // ============================================
-            
-            // 방법 1: 모든 클라이언트에서 출력 (가장 일반적)
-            Debug.Log($"[모든 클라이언트] FixedUpdateNetwork - Object: {gameObject.name}, HasInputAuthority: {Object.HasInputAuthority}");
-            
-            // 방법 2: State Authority를 가진 클라이언트에서만 출력 (서버/호스트)
-            if (Object.HasStateAuthority)
-            {
-                Debug.Log($"[StateAuthority] {gameObject.name} - 서버/호스트에서만 출력");
-            }
-            
-            // 방법 3: Proxy 오브젝트(다른 플레이어의 오브젝트)에서만 출력
-            if (Object.IsProxy)
-            {
-                Debug.Log($"[Proxy] {gameObject.name} - 다른 플레이어의 오브젝트에서 출력");
-            }
-            
-            // 방법 4: InputAuthority가 없는 오브젝트에서만 출력
-            if (!Object.HasInputAuthority)
-            {
-                Debug.Log($"[NoInputAuthority] {gameObject.name} - InputAuthority가 없는 오브젝트");
-                Debug.Log($"  - InputAuthority: {Object.InputAuthority}");
-                Debug.Log($"  - HasStateAuthority: {Object.HasStateAuthority}");
-                Debug.Log($"  - IsProxy: {Object.IsProxy}");
-            }
-            
-            // 방법 5: 특정 플레이어의 InputAuthority 확인
-            if (Object.InputAuthority != null)
-            {
-                Debug.Log($"[InputAuthority] {gameObject.name} - InputAuthority PlayerId: {Object.InputAuthority.PlayerId}");
-            }
-            else
-            {
-                Debug.Log($"[NoInputAuthority] {gameObject.name} - InputAuthority가 null입니다");
-            }
-            
-            // 방법 6: Runner 정보 확인
-            if (Runner != null)
-            {
-                Debug.Log($"[Runner] IsServer: {Runner.IsServer}, IsClient: {Runner.IsClient}, LocalPlayer: {Runner.LocalPlayer}");
-            }
-            
-            // InputAuthority를 가진 플레이어만 포지션 업데이트
             if (Object.HasInputAuthority)
             {
                 // 내 캐릭터: 현재 포지션을 네트워크에 동기화

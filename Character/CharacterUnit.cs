@@ -191,7 +191,15 @@ namespace Shin
 
         public void UpdateName()
         {
-            MasterPlayerId = _testMasterPlayerId;
+            if (Object.HasStateAuthority)
+            {
+                Debug.Log($"Object Name ::: {gameObject.name} UpdateName ::: HasStateAuthority: {Object.HasStateAuthority}");
+                MasterPlayerId = _testMasterPlayerId;
+            }
+            else
+            {
+                Debug.Log($"Object Name ::: {gameObject.name} UpdateName ::: No HasStateAuthority : {Object.HasStateAuthority}");
+            }
         }
     }
 }
