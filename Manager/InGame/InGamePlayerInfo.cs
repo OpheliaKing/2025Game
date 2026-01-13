@@ -190,11 +190,6 @@ namespace Shin
                 Debug.LogError($"캐릭터 프리팹 로드 실패: {playerTid}");
                 return;
             }
-
-            //여 아래 부분은 직접 수정해야됨
-            //InvalidOperationException: Behaviour not initialized: Object not set. 해당 버그 발생
-
-
             // InputAuthority 설정 (RPC 요청인 경우 요청한 플레이어, 아니면 LocalPlayer)
             var targetPlayer = inputAuthority ?? runner.LocalPlayer;
 
@@ -212,15 +207,17 @@ namespace Shin
             Debug.Log($"Test Player Spawned {spawned.name}");
 
             GameObject networkObj = spawned.gameObject;
-
-            //여기 부분 주석 처리 후 문제 해결 시 아래 코드 삭제
             var createPlayerUnit = networkObj.GetComponent<CharacterUnit>();
             if (createPlayerUnit == null)
             {
                 Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
             }
 
-            RpcGrantCharacterControll(targetPlayer, createPlayerUnit.GetNetworkId());
+            if (targetPlayer == Runner.LocalPlayer)
+            {
+                RpcGrantCharacterControll(targetPlayer, createPlayerUnit.GetNetworkId());
+            }
+
 
             Debug.Log($"{networkObj.name} 네트워크 생성 완료 (Fusion), InputAuthority: {targetPlayer}");
         }
@@ -232,20 +229,20 @@ namespace Shin
         private void RpcRequestSpawnPlayerPrefab(string playerTid, RpcInfo info = default)
         {
             Debug.Log($"서버가 플레이어 스폰 요청 받음: {playerTid}, 요청 플레이어: {info.Source}");
-
-            // 서버에서 스폰 (요청한 플레이어를 InputAuthority로 설정)
-            // LoadPlayerPrefabInternal은 항상 NetworkManager의 Runner를 사용
             LoadPlayerPrefabInternal(playerTid, info.Source);
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        private void RpcGrantCharacterControll(PlayerRef playerRef,NetworkId charUuid)
+        private void RpcGrantCharacterControll(PlayerRef playerRef, NetworkId charUuid)
         {
-            if (playerRef == Runner.LocalPlayer)
+            var findChar = GameObject.FindObjectsOfType<CharacterUnit>().FirstOrDefault(x => x.GetNetworkId() == charUuid);
+            _playerUnit = findChar;
+            if(findChar == null)
             {
-                var findChar = GameObject.FindObjectsOfType<CharacterUnit>().FirstOrDefault(x => x.GetNetworkId() == charUuid);
-                _playerUnit = findChar;
+                Debug.LogError("CharacterUnit을 찾을 수 없습니다.");
+                return;
             }
+            _playerUnit.MasterPlayerId = playerRef.PlayerId.ToString();
         }
 
 

@@ -1,4 +1,5 @@
 using System;
+using Fusion;
 using UnityEngine;
 
 namespace Shin
@@ -73,6 +74,9 @@ namespace Shin
         /// True일시 False => True 로 변경된 상태
         /// </summary>
         public Action<bool> OnChangeGroundState;
+
+        [Networked]
+        public string MasterPlayerId { get; set; }
 
         private void Awake()
         {
