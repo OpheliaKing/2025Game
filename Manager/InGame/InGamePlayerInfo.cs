@@ -213,11 +213,7 @@ namespace Shin
                 Debug.LogWarning("생성된 객체에서 CharacterUnit 컴포넌트를 찾지 못했습니다.");
             }
 
-            if (targetPlayer == Runner.LocalPlayer)
-            {
-                RpcGrantCharacterControll(targetPlayer, createPlayerUnit.GetNetworkId());
-            }
-
+            RpcGrantCharacterControll(targetPlayer, createPlayerUnit.GetNetworkId());
 
             Debug.Log($"{networkObj.name} 네트워크 생성 완료 (Fusion), InputAuthority: {targetPlayer}");
         }
@@ -235,14 +231,49 @@ namespace Shin
         [Rpc(RpcSources.All, RpcTargets.All)]
         private void RpcGrantCharacterControll(PlayerRef playerRef, NetworkId charUuid)
         {
-            var findChar = GameObject.FindObjectsOfType<CharacterUnit>().FirstOrDefault(x => x.GetNetworkId() == charUuid);
-            _playerUnit = findChar;
-            if(findChar == null)
+            Debug.Log($"character uuid: {charUuid} \n Local Player Check = {playerRef == Runner.LocalPlayer}");
+            //TestDebug("Target Player: " + playerRef.PlayerId.ToString());
+            if (playerRef == Runner.LocalPlayer)
             {
-                Debug.LogError("CharacterUnit을 찾을 수 없습니다.");
+                var findChar = GameObject.FindObjectsOfType<CharacterUnit>().FirstOrDefault(x => x.GetNetworkId() == charUuid);
+                if (findChar == null)
+                {
+                    Debug.LogError("CharacterUnit을 찾을 수 없습니다.");
+                    return;
+                }
+                _playerUnit = findChar;
+                Debug.Log($"findChar: {findChar.name}");
+
+                // State Authority를 가진 클라이언트(서버/호스트)에게 MasterPlayerId 설정 요청
+                RpcSetMasterPlayerId(charUuid, playerRef.PlayerId.ToString());
+            }
+        }
+
+        /// <summary>
+        /// MasterPlayerId를 설정하는 RPC
+        /// State Authority를 가진 클라이언트에서만 실제로 값을 변경하고, 모든 클라이언트에 동기화됩니다.
+        /// </summary>
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        private void RpcSetMasterPlayerId(NetworkId charUuid, string masterPlayerId, RpcInfo info = default)
+        {
+            // State Authority를 가진 클라이언트에서만 실행됨
+            var findChar = GameObject.FindObjectsOfType<CharacterUnit>().FirstOrDefault(x => x.GetNetworkId() == charUuid);
+            if (findChar == null)
+            {
+                Debug.LogError($"CharacterUnit을 찾을 수 없습니다. NetworkId: {charUuid}");
                 return;
             }
-            _playerUnit.MasterPlayerId = playerRef.PlayerId.ToString();
+
+            // State Authority에서 [Networked] 속성 변경 → 자동으로 모든 클라이언트에 동기화됨
+            findChar.MasterPlayerId = masterPlayerId;
+            findChar._testMasterPlayerId = masterPlayerId;
+            Debug.Log($"[StateAuthority] Master Player Id 설정: {findChar.MasterPlayerId}, Character: {findChar.name}");
+        }
+        
+
+        private void TestDebug(string message)
+        {
+            Debug.Log(message);
         }
 
 

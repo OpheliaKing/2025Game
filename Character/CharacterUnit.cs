@@ -78,6 +78,18 @@ namespace Shin
         [Networked]
         public string MasterPlayerId { get; set; }
 
+        [SerializeField]
+        public string _testMasterPlayerId;
+
+        /// <summary>
+        /// MasterPlayerId가 변경될 때 호출되는 콜백
+        /// 네트워크를 통해 동기화된 값이 변경될 때 모든 클라이언트에서 호출됩니다.
+        /// </summary>
+        private void MasterPlayerIdChanged()
+        {
+            Debug.Log($"[CharacterUnit] MasterPlayerId 변경됨: {MasterPlayerId}, Object: {gameObject.name}, HasInputAuthority: {Object.HasInputAuthority}");
+        }
+
         private void Awake()
         {
             CharacterInit();
@@ -107,6 +119,7 @@ namespace Shin
         {
             MoveUnitUpdate();
             UpdateAIState();
+            UpdateName();
         }
 
         //FSM
@@ -174,6 +187,11 @@ namespace Shin
             }
 
             _isGrounded = isGround;
+        }
+
+        public void UpdateName()
+        {
+            MasterPlayerId = _testMasterPlayerId;
         }
     }
 }
