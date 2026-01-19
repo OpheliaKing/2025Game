@@ -195,14 +195,12 @@ namespace Shin
 
             // Fusion 스폰 (서버만 가능)
             var spawned = runner.Spawn(obj.NetworkObject, Vector3.zero, Quaternion.identity, targetPlayer);
-            spawned.Object.HasStateAuthority = true;
             if (spawned == null)
             {
                 Debug.LogError("Fusion 스폰 실패");
                 return;
             }
 
-spawned.Object.HasStateAuthority = true;
             // 생성된 객체에서 캐릭터 유닛 참조 캐싱 (스폰한 플레이어의 인스턴스에서만)
             // Spawned() 콜백에서도 처리할 수 있음
 

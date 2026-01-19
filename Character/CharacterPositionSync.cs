@@ -69,10 +69,20 @@ namespace Shin
             if (Object.HasInputAuthority)
             {
                 // 내 캐릭터: 현재 포지션을 네트워크에 동기화
-                NetworkedPosition = _transform.position;
-                if (_syncRotation)
+                // State Authority를 가진 경우 직접 변경, 아니면 RPC로 요청
+                if (Object.HasStateAuthority)
                 {
-                    NetworkedRotation = _transform.rotation;
+                    // State Authority를 가진 경우 직접 변경 가능
+                    NetworkedPosition = _transform.position;
+                    if (_syncRotation)
+                    {
+                        NetworkedRotation = _transform.rotation;
+                    }
+                }
+                else
+                {
+                    // State Authority가 없는 경우 RPC로 서버에 요청
+                    RpcUpdatePosition(_transform.position, _syncRotation ? _transform.rotation : Quaternion.identity);
                 }
 
                 // 애니메이션 파라미터 동기화 (로컬 → 네트워크)
@@ -83,18 +93,6 @@ namespace Shin
             }
             else
             {
-                // ============================================
-                // HasInputAuthority가 없는 오브젝트에서 디버그 출력
-                // ============================================
-                
-                // 방법 1: 간단한 조건부 로그
-                LogIfNoInputAuthority("FixedUpdateNetwork 실행 중 - 다른 플레이어의 캐릭터");
-                
-                // 방법 2: 상세한 네트워크 상태 정보
-                // LogNetworkStatus("FixedUpdateNetwork");
-                
-                // 방법 3: Proxy 오브젝트에서만 출력
-                // LogIfProxy("다른 플레이어의 캐릭터 동기화 중");
 
                 // 다른 플레이어의 캐릭터: 네트워크 포지션으로 동기화
                 if (_syncPosition)
@@ -130,6 +128,38 @@ namespace Shin
                 {
                     SyncNetworkToAnimation();
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 클라이언트가 서버(State Authority)에 포지션 동기화를 요청하는 RPC
+        /// Input Authority를 가진 클라이언트가 호출하면, State Authority를 가진 클라이언트에서 실행됩니다.
+        /// </summary>
+        [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+        public void RpcUpdatePosition(Vector3 position, Quaternion rotation, RpcInfo info = default)
+        {
+            // State Authority를 가진 클라이언트에서만 실행됨
+            // [Networked] 속성은 State Authority에서만 변경 가능
+            NetworkedPosition = position;
+            
+            if (_syncRotation)
+            {
+                NetworkedRotation = rotation;
+            }
+            
+            Debug.Log($"[RpcUpdatePosition] 포지션 업데이트: {position}, 요청 플레이어: {info.Source}");
+        }
+        
+        /// <summary>
+        /// 클라이언트에서 포지션 동기화를 요청하는 공개 메서드
+        /// Input Authority를 가진 클라이언트에서 호출 가능
+        /// </summary>
+        public void RequestPositionUpdate()
+        {
+            if (Object.HasInputAuthority)
+            {
+                RpcUpdatePosition(_transform.position, _syncRotation ? _transform.rotation : Quaternion.identity);
             }
         }
 
