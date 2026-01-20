@@ -110,8 +110,8 @@ namespace Shin
             {
                 return;
             }
-            _horizontalLookVec = look;
-            Tr.localScale = new Vector3(_horizontalLookVec, Tr.localScale.y, Tr.localScale.z);
+            
+            Tr.localScale = new Vector3(look, Tr.localScale.y, Tr.localScale.z);
         }
         
         public void ActiveJump()
