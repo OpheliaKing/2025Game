@@ -132,7 +132,7 @@ namespace Shin
             {
                 return;
             }
-            InGameManager.PlayerUnit.ActiveAttack();
+            //InGameManager.PlayerUnit.ActiveAttack();
         }
 
         void OnJump(InputValue value)

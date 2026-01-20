@@ -160,7 +160,7 @@ namespace Shin
             // 상태가 실제로 변경된 경우에만 애니메이션 변경
             if (_characterState != state)
             {
-                AnimationChange(state);
+                RpcAnimationChange(state);
             }
 
             _characterState = state;

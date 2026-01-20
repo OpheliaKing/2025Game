@@ -13,6 +13,7 @@ namespace Shin
         [Header("Position Sync Settings")]
         [SerializeField] private bool _syncPosition = true;
         [SerializeField] private bool _syncRotation = false;
+        [SerializeField] private bool _syncScale = false;
         [SerializeField] private float _interpolationSpeed = 10f;
 
         [Header("Animation Sync Settings")]
@@ -25,6 +26,7 @@ namespace Shin
         // Networked 속성으로 포지션 동기화
         [Networked] private Vector3 NetworkedPosition { get; set; }
         [Networked] private Quaternion NetworkedRotation { get; set; }
+        [Networked] private Vector3 NetworkedScale { get; set; }
 
         // Networked 속성으로 애니메이션 파라미터 동기화
         [Networked, Capacity(10)] private NetworkDictionary<string, float> NetworkedFloatParams => default;
@@ -55,6 +57,7 @@ namespace Shin
                 // 내 캐릭터인 경우 현재 포지션을 네트워크 포지션에 저장
                 NetworkedPosition = _transform.position;
                 NetworkedRotation = _transform.rotation;
+                NetworkedScale = _transform.localScale;
 
                 // 애니메이션 파라미터 초기화
                 if (_syncAnimation && _animator != null)
@@ -78,11 +81,19 @@ namespace Shin
                     {
                         NetworkedRotation = _transform.rotation;
                     }
+                    if (_syncScale)
+                    {
+                        NetworkedScale = _transform.localScale;
+                    }
                 }
                 else
                 {
                     // State Authority가 없는 경우 RPC로 서버에 요청
-                    RpcUpdatePosition(_transform.position, _syncRotation ? _transform.rotation : Quaternion.identity);
+                    RpcUpdatePosition(
+                        _transform.position,
+                        _syncRotation ? _transform.rotation : Quaternion.identity,
+                        _transform.localScale
+                    );
                 }
 
                 // 애니메이션 파라미터 동기화 (로컬 → 네트워크)
@@ -97,29 +108,16 @@ namespace Shin
                 // 다른 플레이어의 캐릭터: 네트워크 포지션으로 동기화
                 if (_syncPosition)
                 {
-                    // Rigidbody2D를 사용하는 경우
-                    if (_rb != null)
-                    {
-                        // Rigidbody2D의 포지션을 직접 설정 (물리 시뮬레이션 중단)
-                        _rb.MovePosition(NetworkedPosition);
-                    }
-                    else
-                    {
-                        // Rigidbody2D가 없는 경우 Transform 직접 설정
-                        _transform.position = NetworkedPosition;
-                    }
+                    _transform.position = NetworkedPosition;
                 }
 
                 if (_syncRotation)
                 {
-                    if (_rb != null)
-                    {
-                        _rb.MoveRotation(NetworkedRotation.eulerAngles.z);
-                    }
-                    else
-                    {
-                        _transform.rotation = NetworkedRotation;
-                    }
+                    _transform.rotation = NetworkedRotation;
+                }
+                if (_syncScale)
+                {
+                    _transform.localScale = NetworkedScale;
                 }
                 Debug.Log("Test _syncAnimation : " + _syncAnimation);
                 Debug.Log("Test _animator : " + _animator);
@@ -137,20 +135,22 @@ namespace Shin
         /// Input Authority를 가진 클라이언트가 호출하면, State Authority를 가진 클라이언트에서 실행됩니다.
         /// </summary>
         [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-        public void RpcUpdatePosition(Vector3 position, Quaternion rotation, RpcInfo info = default)
+        public void RpcUpdatePosition(Vector3 position, Quaternion rotation, Vector3 scale, RpcInfo info = default)
         {
             // State Authority를 가진 클라이언트에서만 실행됨
             // [Networked] 속성은 State Authority에서만 변경 가능
             NetworkedPosition = position;
-            
+
             if (_syncRotation)
             {
                 NetworkedRotation = rotation;
             }
-            
-            Debug.Log($"[RpcUpdatePosition] 포지션 업데이트: {position}, 요청 플레이어: {info.Source}");
+            if (_syncScale)
+            {
+                NetworkedScale = scale;
+            }
         }
-        
+
         /// <summary>
         /// 클라이언트에서 포지션 동기화를 요청하는 공개 메서드
         /// Input Authority를 가진 클라이언트에서 호출 가능
@@ -159,7 +159,11 @@ namespace Shin
         {
             if (Object.HasInputAuthority)
             {
-                RpcUpdatePosition(_transform.position, _syncRotation ? _transform.rotation : Quaternion.identity);
+                RpcUpdatePosition(
+                    _transform.position,
+                    _syncRotation ? _transform.rotation : Quaternion.identity,
+                    _transform.localScale
+                );
             }
         }
 
@@ -175,6 +179,15 @@ namespace Shin
                 _transform.position = Vector3.Lerp(
                     _transform.position,
                     NetworkedPosition,
+                    Time.deltaTime * _interpolationSpeed
+                );
+            }
+
+            if (!Object.HasInputAuthority && _syncScale)
+            {
+                _transform.localScale = Vector3.Lerp(
+                    _transform.localScale,
+                    NetworkedScale,
                     Time.deltaTime * _interpolationSpeed
                 );
             }
@@ -401,7 +414,7 @@ namespace Shin
             {
                 // 로컬에서도 즉시 실행
                 _animator.SetTrigger(triggerName);
-                
+
                 // 네트워크로 동기화
                 NetworkedTriggerParams.Set(triggerName, true);
             }

@@ -31,6 +31,10 @@ namespace Shin
         protected float _jumpSpeed = 8f;
 
         private bool _isJump;
+        public bool IsJump
+        {
+            get { return _isJump; }
+        }
         
         protected int _maxJumpCount = 2;
         protected int _currentJumpCount = 0;
@@ -107,7 +111,7 @@ namespace Shin
                 return;
             }
             _horizontalLookVec = look;
-            Tr.localScale = new Vector3(Mathf.Abs(Tr.localScale.x) * _horizontalLookVec, Tr.localScale.y, Tr.localScale.z);
+            Tr.localScale = new Vector3(_horizontalLookVec, Tr.localScale.y, Tr.localScale.z);
         }
         
         public void ActiveJump()

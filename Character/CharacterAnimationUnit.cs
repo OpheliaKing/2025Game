@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
 
 namespace Shin
@@ -16,7 +17,7 @@ namespace Shin
                 {
                     _anim = GetComponentInChildren<Animator>();
                 }
-                
+
                 return _anim;
             }
         }
@@ -36,18 +37,19 @@ namespace Shin
         {
             OnChangeGroundState += UpdateGroundedAnimParamerters;
         }
-        
-        public void AnimationChange(PublicVariable.CharacterState state)
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcAnimationChange(PublicVariable.CharacterState state)
         {
             switch (state)
             {
-                case PublicVariable.CharacterState.IDLE :
-                    Anim.SetFloat("Move",0f);
+                case PublicVariable.CharacterState.IDLE:
+                    Anim.SetFloat("Move", 0f);
                     break;
-                case PublicVariable.CharacterState.MOVE :
-                    Anim.SetFloat("Move",1f);
+                case PublicVariable.CharacterState.MOVE:
+                    Anim.SetFloat("Move", 1f);
                     break;
-                case PublicVariable.CharacterState.JUMP :
+                case PublicVariable.CharacterState.JUMP:
                     Anim.Play("Jump");
                     break;
             }
@@ -55,29 +57,35 @@ namespace Shin
 
         public void PlayBoolAnim(string name, bool value)
         {
-            Anim.SetBool(name,value);
+            Anim.SetBool(name, value);
         }
-        
+
         public void PlayFloatAnim(string name, float value)
         {
-            Anim.SetFloat(name,value);
+            Anim.SetFloat(name, value);
         }
-        
+
         public void PlayTriggerAnim(string name)
         {
             Anim.SetTrigger(name);
         }
         public void PlayAnim(string name, int layer = 0)
         {
-            Anim.Play(name,layer);
+            Anim.Play(name, layer);
         }
-        
+
         public void UpdateGroundedAnimParamerters(bool isGrounded)
         {
             if (isGrounded && _isJump)
             {
-                Anim.SetTrigger("GroundTrigger");
+                RpcGroundTrigger();
             }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcGroundTrigger()
+        {
+            Anim.SetTrigger("GroundTrigger");
         }
     }
 }
