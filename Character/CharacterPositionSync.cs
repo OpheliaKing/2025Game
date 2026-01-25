@@ -99,21 +99,20 @@ namespace Shin
 
         public override void Render()
         {
-            if (!Object.HasInputAuthority)
+            // InputAuthority가 없는 경우에만 보간 적용
+            if (!Object.HasInputAuthority && _syncPosition)
             {
-                if (_syncPosition)
-                {
-                    _transform.position = NetworkedPosition;
-                }
+                // 부드러운 보간을 위해 Lerp 사용
+                _transform.position = Vector3.Lerp(
+                    _transform.position,
+                    NetworkedPosition,
+                    Time.deltaTime * _interpolationSpeed
+                );
+            }
 
-                if (_syncRotation)
-                {
-                    _transform.rotation = NetworkedRotation;
-                }
-                if (_syncScale)
-                {
-                    _transform.localScale = NetworkedScale;
-                }
+            if (!Object.HasInputAuthority && _syncScale)
+            {
+                _transform.localScale = NetworkedScale;
             }
         }
 
