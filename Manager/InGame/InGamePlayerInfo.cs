@@ -274,7 +274,6 @@ namespace Shin
 
             // State Authority에서 [Networked] 속성 변경 → 자동으로 모든 클라이언트에 동기화됨
             findChar.MasterPlayerId = masterPlayerId;
-            findChar._testMasterPlayerId = masterPlayerId;
             Debug.Log($"[StateAuthority] Master Player Id 설정: {findChar.MasterPlayerId}, Character: {findChar.name}");
         }
         

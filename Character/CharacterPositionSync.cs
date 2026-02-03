@@ -102,12 +102,13 @@ namespace Shin
             // InputAuthority가 없는 경우에만 보간 적용
             if (!Object.HasInputAuthority && _syncPosition)
             {
+                _transform.position = NetworkedPosition;
                 // 부드러운 보간을 위해 Lerp 사용
-                _transform.position = Vector3.Lerp(
-                    _transform.position,
-                    NetworkedPosition,
-                    Time.deltaTime * _interpolationSpeed
-                );
+                // _transform.position = Vector3.Lerp(
+                //     _transform.position,
+                //     NetworkedPosition,
+                //     Time.deltaTime * _interpolationSpeed
+                // );
             }
 
             if (!Object.HasInputAuthority && _syncScale)

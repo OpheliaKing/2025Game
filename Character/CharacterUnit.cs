@@ -75,11 +75,23 @@ namespace Shin
         /// </summary>
         public Action<bool> OnChangeGroundState;
 
+        private Camera _camera;
+
+        public Camera Camera
+        {
+            get
+            {
+                if (_camera == null)
+                {
+                    _camera = GetComponentInChildren<Camera>();
+                }
+
+                return _camera;
+            }
+        }
+
         [Networked]
         public string MasterPlayerId { get; set; }
-
-        [SerializeField]
-        public string _testMasterPlayerId;
 
         /// <summary>
         /// MasterPlayerId가 변경될 때 호출되는 콜백
@@ -104,12 +116,25 @@ namespace Shin
             MoveUnitInit();
             AttackUnitInit();
             AIStateInit();
+            CameraInit();
         }
 
         private void EventInit()
         {
             GroundChecker.OnGroundEvent = UpdateCheckGround;
             GroundChecker.OnOutGroundEvent = UpdateCheckGround;
+        }
+
+        private void CameraInit()
+        {
+            if (Object.HasInputAuthority)
+            {
+                Camera.enabled = true;
+            }
+            else
+            {
+                Camera.enabled = false;
+            }
         }
 
         #endregion
@@ -119,7 +144,6 @@ namespace Shin
         {
             MoveUnitUpdate();
             UpdateAIState();
-            UpdateName();
         }
 
         //FSM
@@ -187,19 +211,6 @@ namespace Shin
             }
 
             _isGrounded = isGround;
-        }
-
-        public void UpdateName()
-        {
-            if (Object.HasStateAuthority)
-            {
-                Debug.Log($"Object Name ::: {gameObject.name} UpdateName ::: HasStateAuthority: {Object.HasStateAuthority}");
-                MasterPlayerId = _testMasterPlayerId;
-            }
-            else
-            {
-                Debug.Log($"Object Name ::: {gameObject.name} UpdateName ::: No HasStateAuthority : {Object.HasStateAuthority}");
-            }
         }
     }
 }
