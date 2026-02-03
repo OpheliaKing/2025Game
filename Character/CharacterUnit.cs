@@ -127,13 +127,16 @@ namespace Shin
 
         private void CameraInit()
         {
-            if (Object.HasInputAuthority)
+            if (Object != null && Camera != null)
             {
-                Camera.enabled = true;
-            }
-            else
-            {
-                Camera.enabled = false;
+                if (Object.HasInputAuthority)
+                {
+                    Camera.enabled = true;
+                }
+                else
+                {
+                    Camera.enabled = false;
+                }
             }
         }
 

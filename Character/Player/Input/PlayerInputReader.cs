@@ -93,6 +93,11 @@ namespace Shin
                         return;
                     }
 
+                    if (InGameManager.PlayerInfo == null)
+                    {
+                        return;
+                    }
+
                      Debug.Log("Move Test 3");
                     InGameManager.PlayerInfo.SetPlayerMoveVector(_moveInput);
                     break;
@@ -132,7 +137,7 @@ namespace Shin
             {
                 return;
             }
-            //InGameManager.PlayerUnit.ActiveAttack();
+            InGameManager.PlayerInfo.ActiveInteraction();
         }
 
         void OnJump(InputValue value)

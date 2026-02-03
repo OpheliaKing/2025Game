@@ -48,6 +48,9 @@ namespace Shin
             MoveInputUpdate();
         }
 
+
+        #region  삭제예정
+
         #region Game Data Sync Methods
 
 
@@ -116,6 +119,14 @@ namespace Shin
 
 
         #endregion
+
+
+
+
+        #endregion
+
+
+
 
         /// <summary>
         /// 캐릭터 유닛 초기화 (기존 메서드 오버로드)
@@ -275,14 +286,7 @@ namespace Shin
             // State Authority에서 [Networked] 속성 변경 → 자동으로 모든 클라이언트에 동기화됨
             findChar.MasterPlayerId = masterPlayerId;
             Debug.Log($"[StateAuthority] Master Player Id 설정: {findChar.MasterPlayerId}, Character: {findChar.name}");
-        }
-        
-
-        private void TestDebug(string message)
-        {
-            Debug.Log(message);
-        }
-
+        }    
 
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void RpcTest()

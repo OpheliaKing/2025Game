@@ -46,6 +46,11 @@ namespace Shin
             PlayerUnit.ActiveAbilityC();
         }
 
+        public void ActiveInteraction()
+        {
+            PlayerUnit.ActiveInteraction();
+        }
+
         private void MoveInputUpdate()
         {
             if (PlayerUnit == null)
