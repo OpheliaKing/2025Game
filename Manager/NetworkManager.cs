@@ -112,14 +112,7 @@ namespace Shin
                 yield return new WaitForSeconds(2f); // 호스트가 씬 로드하는 시간 대기
                 
                 Debug.Log("클라이언트: 호스트의 씬 로드를 대기 중 (OnSceneLoadDone에서 처리)");
-                // OnSceneLoadDone 콜백에서 WaitForMapLoadComplete가 자동으로 시작됨
             }
-
-            // GameManager.Instance.SceneController.LoadScene("InGameScene", () =>
-            // {
-            //     Debug.Log("Game Start Load Scene End");
-            //     InGameManager.Instance.StartGame(null);
-            // });
         }
 
         /// <summary>
@@ -137,15 +130,22 @@ namespace Shin
         private IEnumerator WaitForMapLoadComplete()
         {
             var playerCount = Runner.ActivePlayers.Count();
-            InGameManager.Instance.StageInit("Stage_0001", () =>
+            StageInfo mapData = null;
+            InGameManager.Instance.StageInit("Stage_0001", (loadMapData) =>
             {
                 RpcMapLoadComplete(Runner);
+                mapData = loadMapData;
             });
 
             yield return new WaitUntil(() => _mapLoadPlayerCount == playerCount);
 
 
             Debug.Log("MapLoad All End!!!");
+
+            yield return new WaitUntil(() => InGameManager.Instance.PlayerInfo != null);
+
+            var playerInfo = InGameManager.Instance.PlayerInfo;
+            playerInfo.MapDataInit(mapData);
 
             //InGameManager.Instance.StartGame(null);
         }

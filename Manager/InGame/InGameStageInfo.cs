@@ -140,7 +140,7 @@ namespace Shin
             }
         }
 
-        public void LoadMapPrefab(string mapTid, Action onComplete = null)
+        public void LoadMapPrefab(string mapTid, Action<StageInfo> onComplete = null)
         {
             var data = StageSO.FindStageById(mapTid);
 
@@ -150,9 +150,9 @@ namespace Shin
             }
             var resourceManager = GameManager.Instance.ResourceManager;
             var obj = resourceManager.InstantiatePrefab<GameObject>(data.prefabPath, null, resourceManager.PrefabBasePath);
-
+            var mapData = obj.GetComponent<StageInfo>();
             Debug.Log($"{obj.gameObject.name} 생성 완료");
-            onComplete?.Invoke();
+            onComplete?.Invoke(mapData);
         }
     }
 }

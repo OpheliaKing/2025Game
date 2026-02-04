@@ -58,7 +58,7 @@ namespace Shin
             //StageInit("Stage_0001",onComplete);            
         }
 
-        public void StageInit(string stageTid, Action onComplete = null)
+        public void StageInit(string stageTid, Action<StageInfo> onComplete = null)
         {
             Debug.Log($"StageInfo: {StageInfo}\n stageTid: {stageTid}");
 
@@ -74,7 +74,7 @@ namespace Shin
             // SpawnCharacter("PlayerBase");
         }
 
-        private IEnumerator StageInitCO(string stageTid, Action onComplete = null)
+        private IEnumerator StageInitCO(string stageTid, Action<StageInfo> onComplete = null)
         {
             yield return new WaitUntil(() => StageInfo != null);
 

@@ -8,21 +8,29 @@ namespace Shin
 {
     public partial class InGamePlayerInfo
     {
+        private Dictionary<string, InteractionObject> _mapObjectData = new Dictionary<string, InteractionObject>();
 
-        private Dictionary<string, InteractionObject> _interactionObjectList = new Dictionary<string, InteractionObject>();
+        private Dictionary<string, InteractionObject> InteractionObjectList { get; set; } = new Dictionary<string, InteractionObject>();
 
         /// <summary>
         /// 테스트용 => 
         /// </summary>
-        public void MapDataInit()
+        public void MapDataInit(StageInfo stageInfo)
         {
-            _interactionObjectList.Clear();          
+            if (stageInfo == null)
+            {
+                Debug.LogError("StageInfo is null");
+                return;
+            }
+            
+            var index = 0;
 
-        }
-
-        public void AddInteractionObject(InteractionObject interactionObject)
-        {
-            _interactionObjectList.Add(interactionObject.GetUUID(), interactionObject);
+            foreach (var interactiveObject in stageInfo.InteractiveObjectList)
+            {
+                _mapObjectData.Add(interactiveObject.UUID, interactiveObject);
+                InteractionObjectList.Add(interactiveObject.UUID, interactiveObject);
+                index++;
+            }
         }
 
         //호스트가 상호작용 정보를 받고 처리함
@@ -37,7 +45,7 @@ namespace Shin
         {
             // 상호작용 처리를 다른 클라이언트에게 전송
 
-            var interactionObject = _interactionObjectList[uuid];
+            var interactionObject = InteractionObjectList[uuid];
             if (interactionObject != null)
             {
                 interactionObject.ActionInteractionEndResult();
@@ -48,6 +56,7 @@ namespace Shin
     [Serializable]
     public struct InteractionData
     {
+        [SerializeField]
         private string _uuid;
         public string UUID
         {
@@ -55,18 +64,6 @@ namespace Shin
         }
         public INTERACTION_RESULT_TYPE ResultType;
         public Vector3 TeleportPosition;
-
-        public InteractionData(string uuid, INTERACTION_RESULT_TYPE resultType, Vector3 teleportPosition)
-        {
-            _uuid = uuid;
-            ResultType = resultType;
-            TeleportPosition = teleportPosition;
-        }
-
-        public void SetUUID(string uuid)
-        {
-            _uuid = uuid;
-        }
     }
     /// <summary>
     /// 상호작용 결과 타입
