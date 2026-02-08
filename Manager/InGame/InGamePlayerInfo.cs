@@ -31,6 +31,11 @@ namespace Shin
         /// </summary>
         private Dictionary<string, CharacterUnit> _characterUnitList = new Dictionary<string, CharacterUnit>();
 
+        public Dictionary<string, CharacterUnit> CharacterUnitList
+        {
+            get { return _characterUnitList; }
+        }
+
         // 이벤트
         public System.Action<GameSyncData> OnGameDataReceived;
         public System.Action<string, GameSyncData> OnPlayerDataUpdated;

@@ -35,20 +35,20 @@ namespace Shin
 
         //호스트가 상호작용 정보를 받고 처리함
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RpcActiveInteractionStart(string uuid)
+        public void RpcActiveInteractionStart(string uuid,string masterPlayerId)
         {
-            RpcActiveInteractionEnd(uuid);
+            RpcActiveInteractionEnd(uuid,masterPlayerId);
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RpcActiveInteractionEnd(string uuid)
+        public void RpcActiveInteractionEnd(string uuid,string masterPlayerId)
         {
             // 상호작용 처리를 다른 클라이언트에게 전송
 
             var interactionObject = InteractionObjectList[uuid];
             if (interactionObject != null)
             {
-                interactionObject.ActionInteractionEndResult();
+                interactionObject.ActionInteractionEndResult(masterPlayerId);
             }
         }
     }

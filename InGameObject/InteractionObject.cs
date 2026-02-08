@@ -24,14 +24,17 @@ namespace Shin
         /// </summary>
         public void ActiveInteraction()
         {
-            InGameManager.Instance.PlayerInfo.RpcActiveInteractionStart(_interactionData.UUID);
+            var masterPlayerId = InGameManager.Instance.PlayerInfo.PlayerUnit.MasterPlayerId;
+            InGameManager.Instance.PlayerInfo.RpcActiveInteractionStart(_interactionData.UUID,masterPlayerId);
         }
 
-        public void ActionInteractionEndResult()
+        public void ActionInteractionEndResult(string masterPlayerId)
         {
             switch (_interactionData.ResultType)
             {
                 case INTERACTION_RESULT_TYPE.TELEPORT:
+                    var player = InGameManager.Instance.PlayerInfo.CharacterUnitList[masterPlayerId];
+                    player.PlayerTeleport(_interactionData.TeleportPosition);
                     break;
                 case INTERACTION_RESULT_TYPE.SPRITE_CHANGE:
                     sprite.color = Color.blue;
