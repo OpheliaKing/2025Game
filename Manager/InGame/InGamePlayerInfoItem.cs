@@ -33,6 +33,8 @@ namespace Shin
 
         private Action<string, int> _onGetItemCountCallback;
 
+        private Action<bool> _onRemoveItemCountCallback;
+
         private void LoadSO()
         {
             var resourceManager = GameManager.Instance.ResourceManager;
@@ -53,8 +55,16 @@ namespace Shin
             }
             else
             {
-                _itemInfoList.Add(itemId, new ItemInfo(itemId, count));
+                var data = new ItemInfo(itemId, count);
+                Debug.Log($"Add Item {itemId} count: {count}");
+                _itemInfoList.Add(itemId, data);
             }
+        }
+
+        public void RequestUseItem(string itemId, int useCount, Action<bool> onRemoveItemCountCallback)
+        {
+            _onRemoveItemCountCallback = onRemoveItemCountCallback;
+            RpcRemoveItemCount(itemId, useCount);
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -62,8 +72,36 @@ namespace Shin
         {
             if (_itemInfoList.ContainsKey(itemId))
             {
-                _itemInfoList[itemId].RemoveItemCount(count);
+                if (_itemInfoList[itemId].HaveCount >= count)
+                {
+                    _itemInfoList[itemId].RemoveItemCount(count);
+                    RpcRemoveItemResult(true, info);
+                }
+                else
+                {
+                    RpcRemoveItemResult(false, info);
+                }
             }
+            else
+            {
+               RpcRemoveItemResult(false, info);
+            }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All, HostMode = RpcHostMode.SourceIsHostPlayer)]
+        public void RpcRemoveItemResult(bool result, RpcInfo info = default)
+        {
+            //요청한 플레이어
+            if (info.Source == Runner.LocalPlayer)
+            {
+                 _onRemoveItemCountCallback?.Invoke(result);
+            }
+        }
+
+        public void RequestItemCount(string itemId, Action<string, int> onGetItemCountCallback)
+        {
+            _onGetItemCountCallback = onGetItemCountCallback;
+            RpcGetItemCountRequest(itemId);
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority, HostMode = RpcHostMode.SourceIsHostPlayer)]
@@ -80,7 +118,7 @@ namespace Shin
             }
         }
 
-        [Rpc(RpcSources.All, RpcTargets.All,HostMode = RpcHostMode.SourceIsHostPlayer)]
+        [Rpc(RpcSources.All, RpcTargets.All, HostMode = RpcHostMode.SourceIsHostPlayer)]
         public void RpcGetItemCount(string itemId, int count, RpcInfo info = default)
         {
             //요청한 플레이어
@@ -88,12 +126,6 @@ namespace Shin
             {
                 _onGetItemCountCallback?.Invoke(itemId, count);
             }
-        }
-
-        public void RequestItemCount(string itemId, Action<string,int> onGetItemCountCallback)
-        {
-            _onGetItemCountCallback = onGetItemCountCallback;
-            RpcGetItemCountRequest(itemId);
         }
     }
 }

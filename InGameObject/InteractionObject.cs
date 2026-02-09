@@ -53,12 +53,31 @@ namespace Shin
                     sprite.color = Color.blue;
                     break;
                     case INTERACTION_RESULT_TYPE.ITEM_GET:
+                    Debug.Log("Item Get");
                     PlayerInfo.RpcAddItemCount(_interactionData.ItemId, 1);
                     break;
                 case INTERACTION_RESULT_TYPE.ITEM_USE:
                     PlayerInfo.RequestItemCount(_interactionData.ItemId, (itemId, count) =>
                     {
-                        Debug.Log($"Request Item {itemId} count: {count}");
+                        if (count > 0)
+                        {
+                            PlayerInfo.RequestUseItem(_interactionData.ItemId, 1, (result)=>
+                            {
+                                if (result)
+                                {
+                                    PlayerInfo.RpcActiveControlObjectStart(_interactionData.ControlObjectId, masterPlayerId);
+                                    Debug.Log("Use Item");
+                                }
+                                else
+                                {
+                                    Debug.Log("Empty Item");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            Debug.Log("Empty Item");
+                        }
                     });
                     break;
             }
