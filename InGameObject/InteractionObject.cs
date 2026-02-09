@@ -52,6 +52,9 @@ namespace Shin
                 case INTERACTION_RESULT_TYPE.SPRITE_CHANGE:
                     sprite.color = Color.blue;
                     break;
+                    case INTERACTION_RESULT_TYPE.ITEM_GET:
+                    PlayerInfo.RpcAddItemCount(_interactionData.ItemId, 1);
+                    break;
                 case INTERACTION_RESULT_TYPE.ITEM_USE:
                     PlayerInfo.RequestItemCount(_interactionData.ItemId, (itemId, count) =>
                     {
