@@ -62,8 +62,27 @@ namespace Shin
         {
             get { return _uuid; }
         }
-        public INTERACTION_RESULT_TYPE ResultType;
-        public Vector3 TeleportPosition;
+
+        [SerializeField]
+        private INTERACTION_RESULT_TYPE _RESULT_TYPE;
+        public INTERACTION_RESULT_TYPE ResultType
+        {
+            get { return _RESULT_TYPE; }
+        }
+
+        [SerializeField]
+        private Vector3 _teleportPosition;
+        public Vector3 TeleportPosition
+        {
+            get { return _teleportPosition; }
+        }
+
+        [SerializeField]
+        private string _itemId;
+        public string ItemId
+        {
+            get { return _itemId; }
+        }
     }
     /// <summary>
     /// 상호작용 결과 타입
@@ -73,5 +92,7 @@ namespace Shin
         NONE,
         TELEPORT,
         SPRITE_CHANGE,
+        ITEM_GET,
+        ITEM_USE,
     }
 }

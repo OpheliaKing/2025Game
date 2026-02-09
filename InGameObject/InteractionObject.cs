@@ -18,14 +18,27 @@ namespace Shin
         private SpriteRenderer sprite;
 
         public string UUID => _interactionData.UUID;
+        
+        private InGamePlayerInfo _playerInfo;
+        private InGamePlayerInfo PlayerInfo
+        {
+            get
+            {
+                if (_playerInfo == null)
+                {
+                    _playerInfo = InGameManager.Instance.PlayerInfo;
+                }
+                return _playerInfo;
+            }
+        }
 
         /// <summary>
         /// 플레이어에 의해 상호작용을 했을때
         /// </summary>
         public void ActiveInteraction()
         {
-            var masterPlayerId = InGameManager.Instance.PlayerInfo.PlayerUnit.MasterPlayerId;
-            InGameManager.Instance.PlayerInfo.RpcActiveInteractionStart(_interactionData.UUID,masterPlayerId);
+            var masterPlayerId = PlayerInfo.PlayerUnit.MasterPlayerId;
+            PlayerInfo.RpcActiveInteractionStart(_interactionData.UUID, masterPlayerId);
         }
 
         public void ActionInteractionEndResult(string masterPlayerId)
@@ -33,11 +46,17 @@ namespace Shin
             switch (_interactionData.ResultType)
             {
                 case INTERACTION_RESULT_TYPE.TELEPORT:
-                    var player = InGameManager.Instance.PlayerInfo.CharacterUnitList[masterPlayerId];
+                    var player = PlayerInfo.CharacterUnitList[masterPlayerId];
                     player.PlayerTeleport(_interactionData.TeleportPosition);
                     break;
                 case INTERACTION_RESULT_TYPE.SPRITE_CHANGE:
                     sprite.color = Color.blue;
+                    break;
+                case INTERACTION_RESULT_TYPE.ITEM_USE:
+                    PlayerInfo.RequestItemCount(_interactionData.ItemId, (itemId, count) =>
+                    {
+                        Debug.Log($"Request Item {itemId} count: {count}");
+                    });
                     break;
             }
         }

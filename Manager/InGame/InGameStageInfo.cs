@@ -31,6 +31,8 @@ namespace Shin
             }
         }
 
+
+
         public System.Action<GameSyncData> OnGameDataReceived;
         public System.Action<string, GameSyncData> OnPlayerDataUpdated;
 
