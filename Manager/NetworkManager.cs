@@ -29,10 +29,10 @@ namespace Shin
                 // null인 경우 경고 로그 (디버그 모드에서만)
                 if (runner == null)
                 {
-                    Debug.LogWarning("NetworkManager: Runner가 null입니다. NetworkRunner GameObject에 연결되어 있는지 확인하세요.");                    
+                    Debug.LogWarning("NetworkManager: Runner가 null입니다. NetworkRunner GameObject에 연결되어 있는지 확인하세요.");
                     runner = GetComponent<NetworkRunner>();
                 }
-                
+
                 return runner;
             }
         }
@@ -46,7 +46,7 @@ namespace Shin
         private bool FindRuuner()
         {
             var runner = Runner;
-            
+
             if (runner == null)
             {
                 Debug.LogError("NetworkManager: Runner가 null입니다. " +
@@ -92,16 +92,30 @@ namespace Shin
             // 호스트(서버)만 씬 로드를 실행할 수 있음
             if (Runner.IsServer)
             {
+                _mapLoadPlayerCount = 0;
                 Debug.Log("호스트가 씬 로드를 시작합니다.");
-                var loadScene = Runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
 
-                loadScene.AddOnCompleted((x) =>
+                SceneLoad("InGameScene", LoadSceneMode.Additive, () =>
                 {
                     Debug.Log("Scene Load End!!!");
-
-                    //씬 전환 후 맵 로드 코루틴 시작
                     StartCoroutine(WaitForMapLoadComplete());
+
                 });
+
+
+                // var loadScene = Runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
+
+                // loadScene.AddOnCompleted((x) =>
+                // {
+                //     Debug.Log("Scene Load End!!!");
+
+                //     //씬 전환 후 맵 로드 코루틴 시작
+
+
+                //     //테스트 후 스크립트 수정
+
+
+                // });
             }
             else
             {
@@ -110,7 +124,7 @@ namespace Shin
                 // 씬 로드는 자동으로 동기화되므로 OnSceneLoadDone 콜백에서 처리될 것임
                 // 여기서는 간단히 대기만 함 (실제 씬 로드 완료는 OnSceneLoadDone에서 처리)
                 yield return new WaitForSeconds(2f); // 호스트가 씬 로드하는 시간 대기
-                
+
                 Debug.Log("클라이언트: 호스트의 씬 로드를 대기 중 (OnSceneLoadDone에서 처리)");
             }
         }
@@ -123,12 +137,14 @@ namespace Shin
         {
             Debug.Log("RpcGameStartInit Run!!!");
 
-            GameManager.Instance.UImanager.Clear();
+            GameManager.Instance.UImanager.SetActiveCanvas(false);
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
         }
 
         private IEnumerator WaitForMapLoadComplete()
         {
+            Debug.Log("Load Test 11");
+
             var playerCount = Runner.ActivePlayers.Count();
             StageInfo mapData = null;
             InGameManager.Instance.StageInit("Stage_0001", (loadMapData) =>
@@ -137,9 +153,11 @@ namespace Shin
                 mapData = loadMapData;
             });
 
+            Debug.Log("Load Test 22");
+
             yield return new WaitUntil(() => _mapLoadPlayerCount == playerCount);
 
-
+            Debug.Log("Load Test 33");
             Debug.Log("MapLoad All End!!!");
 
             yield return new WaitUntil(() => InGameManager.Instance.PlayerInfo != null);
@@ -208,7 +226,7 @@ namespace Shin
                 GameManager.Instance.SceneController.OnNetworkSceneLoadDone();
                 GameManager.Instance.SceneController.OnSceneLoadDone(runner);
             }
-            
+
             // 클라이언트의 경우 맵 로드 코루틴 시작
             // 호스트는 StartGameRoutine에서 이미 시작했으므로 중복 방지
             if (!runner.IsServer)
@@ -230,44 +248,27 @@ namespace Shin
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
 
-        public void Test()
+
+        public void SceneLoad(string sceneName, LoadSceneMode mode, Action loadComplete = null)
         {
             var runner = Runner;
-            
             if (runner == null)
             {
                 Debug.LogError("NetworkManager: Runner가 null입니다. NetworkRunner GameObject에 연결되어 있는지 확인하세요.");
                 return;
             }
 
-            if (!runner.IsRunning)
+            if (runner.IsServer)
             {
-                Debug.LogError("NetworkManager: Runner가 실행 중이 아닙니다.");
-                return;
-            }
+                var loadScene = Runner.LoadScene(sceneName, LoadSceneMode.Single);
 
-            // Static RPC를 호출 - 이제 SimulationBehaviour를 상속했으므로 정상 작동
-            RpcTestLog(runner);
-        }
-
-
-        /// <summary>
-        /// Static RPC: NetworkBehaviour가 아닌 MonoBehaviour에서 사용
-        /// 첫 번째 인수로 NetworkRunner가 필요함
-        /// </summary>
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public static void RpcTestLog(NetworkRunner runner)
-        {
-            if (runner != null && runner.IsRunning)
-            {
-                Debug.Log($"RpcTestLog Run!!! (Local Player: {runner.LocalPlayer})");
+                loadScene.AddOnCompleted((x) =>
+                {
+                    GameManager.Instance.SetInGameState(sceneName == "InGameScene");
+                    SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+                    loadComplete?.Invoke();
+                });
             }
-            else
-            {
-                Debug.LogError("NetworkRunner is not running");
-            }
-            GameManager.Instance.LobbyManager.RoomManager.TestPush();
         }
     }
 }
-

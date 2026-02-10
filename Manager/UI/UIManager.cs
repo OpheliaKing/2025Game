@@ -46,7 +46,7 @@ namespace Shin
             if (uiInstance == null)
             {
                 var reManager = GameManager.Instance.ResourceManager;
-                uiInstance = reManager.InstantiatePrefab<UIBase>(uiName,_canvas, reManager.UIPrefabPath);
+                uiInstance = reManager.InstantiatePrefab<UIBase>(uiName, _canvas, reManager.UIPrefabPath);
                 if (uiInstance == null)
                 {
                     Debug.LogError($"Not Found Prefab!!! {uiName} ");
@@ -131,9 +131,14 @@ namespace Shin
 			}
 		}
 
+        public void SetActiveCanvas(bool isActive)
+        {
+            _canvas.gameObject.SetActive(isActive);
+        }
+
 		public bool Contains(UIBase ui)
-		{
-			return _uiStack.Contains(ui);
-		}
+        {
+            return _uiStack.Contains(ui);
+        }
 	}
 }

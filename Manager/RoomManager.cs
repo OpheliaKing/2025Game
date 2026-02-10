@@ -102,7 +102,6 @@ namespace Shin
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner != null && runner.IsRunning)
             {
-                GameManager.Instance.NetworkManager.Test();
                 NetworkManager.RpcGameStart(runner);
             }
             else
@@ -114,19 +113,6 @@ namespace Shin
         public void SetActive(bool isActive)
         {
             gameObject.SetActive(isActive);
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                GameManager.Instance.NetworkManager.Test();
-            }
-        }
-        
-        public void TestPush()
-        {
-            _textMeshProUGUI.text = "Test Push";
         }
     }
 }

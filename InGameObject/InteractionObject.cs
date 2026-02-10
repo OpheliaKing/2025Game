@@ -52,7 +52,7 @@ namespace Shin
                 case INTERACTION_RESULT_TYPE.SPRITE_CHANGE:
                     sprite.color = Color.blue;
                     break;
-                    case INTERACTION_RESULT_TYPE.ITEM_GET:
+                case INTERACTION_RESULT_TYPE.ITEM_GET:
                     Debug.Log("Item Get");
                     PlayerInfo.RpcAddItemCount(_interactionData.ItemId, 1);
                     break;
@@ -61,7 +61,7 @@ namespace Shin
                     {
                         if (count > 0)
                         {
-                            PlayerInfo.RequestUseItem(_interactionData.ItemId, 1, (result)=>
+                            PlayerInfo.RequestUseItem(_interactionData.ItemId, 1, (result) =>
                             {
                                 if (result)
                                 {
@@ -79,6 +79,9 @@ namespace Shin
                             Debug.Log("Empty Item");
                         }
                     });
+                    break;
+                case INTERACTION_RESULT_TYPE.GAME_CLEAR:
+                    InGameManager.Instance.GameClear();
                     break;
             }
         }

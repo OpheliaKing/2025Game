@@ -16,12 +16,14 @@ namespace Shin
         {
             get
             {
-                if (_uiManager == null)
+                if (!GameManager.Instance.IsInGame)
                 {
-                    _uiManager = GameManager.Instance.UImanager;
+                    return GameManager.Instance.UImanager;
                 }
-
-                return _uiManager;
+                else
+                {
+                    return InGameManager.Instance.InGameUIManager;
+                }
             }
         }
 
@@ -98,7 +100,7 @@ namespace Shin
                         return;
                     }
 
-                     Debug.Log("Move Test 3");
+                    Debug.Log("Move Test 3");
                     InGameManager.PlayerInfo.SetPlayerMoveVector(_moveInput);
                     break;
                 case INPUT_MODE.UISelect:
@@ -156,7 +158,7 @@ namespace Shin
             {
                 return;
             }
-           InGameManager.PlayerInfo.ActiveAbilityA();
+            InGameManager.PlayerInfo.ActiveAbilityA();
         }
 
         void OnAbilityB(InputValue value)
@@ -165,7 +167,7 @@ namespace Shin
             {
                 return;
             }
-           InGameManager.PlayerInfo.ActiveAbilityB();
+            InGameManager.PlayerInfo.ActiveAbilityB();
         }
 
         void OnAbilityC(InputValue value)
@@ -209,7 +211,7 @@ namespace Shin
                 return;
             }
 
-           UIManager.Current.OnCancel();
+            UIManager.Current.OnCancel();
         }
 
 

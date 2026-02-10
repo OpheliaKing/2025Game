@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Shin
 {
@@ -40,16 +41,19 @@ namespace Shin
                 }
                 return _stageInfo;
             }
-
         }
 
-        private void Update()
-        {
-            //MoveInputUpdate();
 
-            if (Input.GetKeyDown(KeyCode.Space))
+        private UIManager _inGameUIManager;
+        public UIManager InGameUIManager
+        {
+            get
             {
-                PlayerInfo.RpcTest();
+                if (_inGameUIManager == null || !_inGameUIManager.gameObject.activeSelf)
+                {
+                    _inGameUIManager = GameObject.Find("InGameUIManager").GetComponent<UIManager>();
+                }
+                return _inGameUIManager;
             }
         }
 
@@ -63,15 +67,6 @@ namespace Shin
             Debug.Log($"StageInfo: {StageInfo}\n stageTid: {stageTid}");
 
             StartCoroutine(StageInitCO(stageTid, onComplete));
-
-            // if (StageInfo == null)
-            // {
-            //     Debug.LogError("StageInfo is null");
-            //     return;
-            // }
-
-            // StageInfo.LoadMapPrefab(stageTid, onComplete);
-            // SpawnCharacter("PlayerBase");
         }
 
         private IEnumerator StageInitCO(string stageTid, Action<StageInfo> onComplete = null)
@@ -85,6 +80,23 @@ namespace Shin
         private void SpawnCharacter(string characterTid)
         {
             PlayerInfo.LoadPlayerPrefab(characterTid);
+        }
+
+        public void GameClear()
+        {
+            Debug.Log("Test Game Clear");
+            GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.UISelect);
+            InGameUIManager.ShowUI("GameClearUI");
+        }
+
+        public void GameClearInput()
+        {
+            GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
+            {
+                Debug.Log("Game Clear");
+                //테스트
+                GameManager.Instance.UImanager.SetActiveCanvas(true);
+            });
         }
     }
 }

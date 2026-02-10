@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Shin
 {
-    //PhotonObject
+    //해당 클래스를 InGameNetworkManager 로 변경후 stageInfo도 합병해야됨
     public partial class InGamePlayerInfo : NetworkBehaviour
     {
         [SerializeField]

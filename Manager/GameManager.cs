@@ -94,7 +94,7 @@ namespace Shin
 
         [SerializeField]
         private NetworkManager _netWorkManager;
-        
+
         public NetworkManager NetworkManager
         {
             get
@@ -103,14 +103,14 @@ namespace Shin
                 {
                     _netWorkManager = GetComponentInChildren<NetworkManager>();
                 }
-                
+
                 return _netWorkManager;
             }
         }
 
 
         private LobbyManager _lobbyManager;
-        
+
         public LobbyManager LobbyManager
         {
             get
@@ -122,6 +122,15 @@ namespace Shin
                 }
 
                 return _lobbyManager;
+            }
+        }
+
+        private bool _isInGame = false;
+        public bool IsInGame
+        {
+            get
+            {
+                return _isInGame;
             }
         }
 
@@ -163,6 +172,11 @@ namespace Shin
             Debug.Log("Game Start");
 
             UImanager.ShowUI("StartUI");
+        }
+        
+        public void SetInGameState(bool state)
+        {
+            _isInGame = state;
         }
     }
 }

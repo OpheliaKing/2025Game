@@ -22,6 +22,8 @@ namespace Shin
         /// </summary>
         public void MapDataInit(StageInfo stageInfo)
         {
+            Debug.Log("Test MapDataInit");
+
             if (stageInfo == null)
             {
                 Debug.LogError("StageInfo is null");
@@ -64,7 +66,7 @@ namespace Shin
         {
             RpcActiveControlObjectEnd(objectId, masterPlayerId);
         }
-        
+
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void RpcActiveControlObjectEnd(string objectId, string masterPlayerId)
         {
@@ -131,12 +133,13 @@ namespace Shin
         SPRITE_CHANGE,
         ITEM_GET,
         ITEM_USE,
+        GAME_CLEAR,
     }
 
     public enum INTERACTION_RESULT_ITEM_USE_TYPE
     {
         NONE,
-        OBJECT_CONTROL
+        OBJECT_CONTROL,
     }
 
     public enum OBJECT_CONTROL_TYPE
