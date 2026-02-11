@@ -101,21 +101,6 @@ namespace Shin
                     StartCoroutine(WaitForMapLoadComplete());
 
                 });
-
-
-                // var loadScene = Runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
-
-                // loadScene.AddOnCompleted((x) =>
-                // {
-                //     Debug.Log("Scene Load End!!!");
-
-                //     //씬 전환 후 맵 로드 코루틴 시작
-
-
-                //     //테스트 후 스크립트 수정
-
-
-                // });
             }
             else
             {
@@ -220,12 +205,13 @@ namespace Shin
         public void OnSceneLoadDone(NetworkRunner runner)
         {
             Debug.Log("NetworkManager: 씬 로드 완료");
+
             // SceneController에 씬 로드 완료 알림
-            if (GameManager.Instance?.SceneController != null)
-            {
-                GameManager.Instance.SceneController.OnNetworkSceneLoadDone();
-                GameManager.Instance.SceneController.OnSceneLoadDone(runner);
-            }
+            //if (GameManager.Instance?.SceneController != null)
+            // {
+            //      GameManager.Instance.SceneController.OnNetworkSceneLoadDone();
+            //       GameManager.Instance.SceneController.OnSceneLoadDone(runner);
+            //     }
 
             // 클라이언트의 경우 맵 로드 코루틴 시작
             // 호스트는 StartGameRoutine에서 이미 시작했으므로 중복 방지
@@ -240,11 +226,12 @@ namespace Shin
         {
             Debug.Log("NetworkManager: 씬 로드 시작");
             // SceneController에 씬 로드 시작 알림
-            if (GameManager.Instance?.SceneController != null)
-            {
-                GameManager.Instance.SceneController.OnSceneLoadStart(runner);
-            }
+            // if (GameManager.Instance?.SceneController != null)
+            // {
+            //     GameManager.Instance.SceneController.OnSceneLoadStart(runner);
+            // }
         }
+
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
 

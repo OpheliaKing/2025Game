@@ -36,21 +36,9 @@ namespace Shin
             get { return _characterUnitList; }
         }
 
-        // 이벤트
-        public System.Action<GameSyncData> OnGameDataReceived;
-        public System.Action<string, GameSyncData> OnPlayerDataUpdated;
-
         private void Update()
         {
             MoveInputUpdate();
-        }
-
-        /// <summary>
-        /// 캐릭터 유닛 초기화 (기존 메서드 오버로드)
-        /// </summary>
-        private void CharacterUnitInit()
-        {
-            // 기본 캐릭터 초기화
         }
 
         /// <summary>
@@ -222,12 +210,6 @@ namespace Shin
 
             _characterUnitList.Add(userId, characterUnit);
             Debug.Log($"캐릭터 유닛 추가: userId: {userId}, characterUnit: {characterUnit.name}");
-        }
-
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RpcTest()
-        {
-            Debug.Log("RpcTest 호출");
         }
     }
 }

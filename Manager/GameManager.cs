@@ -14,16 +14,6 @@ namespace Shin
 
         #region  Managers
 
-        [SerializeField]
-        private SceneController _sceneController;
-
-        public SceneController SceneController
-        {
-            get
-            {
-                return _sceneController;
-            }
-        }
 
         private ResourceManager _resourceManager;
 
