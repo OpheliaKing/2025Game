@@ -88,15 +88,5 @@ namespace Shin
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.UISelect);
             InGameUIManager.ShowUI("GameClearUI");
         }
-
-        public void GameClearInput()
-        {
-            GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
-            {
-                Debug.Log("Game Clear");
-                //테스트
-                GameManager.Instance.UImanager.SetActiveCanvas(true);
-            });
-        }
     }
 }

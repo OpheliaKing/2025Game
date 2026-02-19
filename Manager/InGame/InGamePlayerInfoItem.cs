@@ -59,6 +59,8 @@ namespace Shin
                 Debug.Log($"Add Item {itemId} count: {count}");
                 _itemInfoList.Add(itemId, data);
             }
+
+            RpcPopupMessage($"{info.Source.PlayerId}님이 {itemId} {count}개 획득");
         }
 
         public void RequestUseItem(string itemId, int useCount, Action<bool> onRemoveItemCountCallback)

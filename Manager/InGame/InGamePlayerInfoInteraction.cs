@@ -30,6 +30,9 @@ namespace Shin
                 return;
             }
 
+            InteractionObjectList.Clear();
+            _mapControlObjectData.Clear();
+
             foreach (var interactiveObject in stageInfo.InteractiveObjectList)
             {
                 //_mapObjectData.Add(interactiveObject.UUID, interactiveObject);

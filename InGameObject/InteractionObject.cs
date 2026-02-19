@@ -81,7 +81,7 @@ namespace Shin
                     });
                     break;
                 case INTERACTION_RESULT_TYPE.GAME_CLEAR:
-                    InGameManager.Instance.GameClear();
+                    InGameManager.Instance.PlayerInfo.RpcGameClear();
                     break;
             }
         }

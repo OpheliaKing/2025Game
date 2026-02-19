@@ -9,7 +9,11 @@ namespace Shin
         override protected void OnConfirmImpl()
         {
             base.OnConfirmImpl();
-            InGameManager.Instance.GameClearInput();
+
+            if (InGameManager.Instance.PlayerInfo.Object.HasStateAuthority)
+            {
+                InGameManager.Instance.PlayerInfo.RpcGameClearInputCheck();
+            }
         }
     }
 }

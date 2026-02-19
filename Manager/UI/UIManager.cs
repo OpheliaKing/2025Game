@@ -3,8 +3,8 @@ using UnityEngine;
 
 namespace Shin
 {
-	public class UIManager : ManagerBase
-	{
+    public class UIManager : ManagerBase
+    {
         //Inspecter
         [SerializeField]
         private Transform _canvas;
@@ -14,20 +14,20 @@ namespace Shin
         [SerializeField]
         private List<UIBase> _uiPrefabList;
 
-		private List<UIBase> _cashedUI;
+        private List<UIBase> _cashedUI;
 
-		private readonly Stack<UIBase> _uiStack = new Stack<UIBase>();
+        private readonly Stack<UIBase> _uiStack = new Stack<UIBase>();
 
-		public UIBase Current => _uiStack.Count > 0 ? _uiStack.Peek() : null;
+        public UIBase Current => _uiStack.Count > 0 ? _uiStack.Peek() : null;
 
-		public override void ManagerInit()
-		{
-			base.ManagerInit();
-			if (_cashedUI == null)
-			{
-				_cashedUI = new List<UIBase>();
-			}
-		}
+        public override void ManagerInit()
+        {
+            base.ManagerInit();
+            if (_cashedUI == null)
+            {
+                _cashedUI = new List<UIBase>();
+            }
+        }
 
         public void ShowUI(string uiName)
         {
@@ -71,6 +71,16 @@ namespace Shin
             Push(uiInstance);
         }
 
+        public void ShowTextPopup(string text)
+        {
+            ShowUI("TextPopupUI");
+            TextPopupUI textPopupUI = Current as TextPopupUI;            
+            if (textPopupUI != null)
+            {
+                textPopupUI.Show(text);
+            }
+        }
+
         public void Push(UIBase ui)
         {
             if (ui == null)
@@ -89,56 +99,63 @@ namespace Shin
             ui.OnFocus();
         }
 
-		public UIBase Pop()
-		{
-			if (_uiStack.Count == 0)
-			{
-				return null;
-			}
+        public UIBase Pop()
+        {
+            if (_uiStack.Count == 0)
+            {
+                return null;
+            }
 
-			UIBase top = _uiStack.Pop();
-			top.OnUnfocus();
-			top.OnPop();
-			top.Hide();
+            UIBase top = _uiStack.Pop();
+            top.OnUnfocus();
+            top.OnPop();
+            top.Hide();
 
-			if (Current != null)
-			{
-				Current.Show();
-				Current.OnFocus();
-			}
+            if (Current != null)
+            {
+                Current.Show();
+                Current.OnFocus();
+            }
 
-			return top;
-		}
+            return top;
+        }
 
-		public void PopUntil(UIBase target)
-		{
-			if (target == null)
-			{
-				return;
-			}
+        public void PopUntil(UIBase target)
+        {
+            if (target == null)
+            {
+                return;
+            }
 
-			while (_uiStack.Count > 0 && Current != target)
-			{
-				Pop();
-			}
-		}
+            while (_uiStack.Count > 0 && Current != target)
+            {
+                Pop();
+            }
+        }
 
-		public void Clear()
-		{
-			while (_uiStack.Count > 0)
-			{
-				Pop();
-			}
-		}
+        public void Clear()
+        {
+            while (_uiStack.Count > 0)
+            {
+                Pop();
+            }
+        }
 
         public void SetActiveCanvas(bool isActive)
         {
             _canvas.gameObject.SetActive(isActive);
         }
 
-		public bool Contains(UIBase ui)
+        public bool Contains(UIBase ui)
         {
             return _uiStack.Contains(ui);
         }
-	}
+    }
+}
+
+public enum UI_TYPE
+{
+    MAIN,
+    POPUP,
+    NONE
 }

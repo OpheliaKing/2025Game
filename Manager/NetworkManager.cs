@@ -130,6 +130,11 @@ namespace Shin
         {
             Debug.Log("Load Test 11");
 
+            if (InGameManager.Instance.PlayerInfo != null)
+            {
+                InGameManager.Instance.PlayerInfo.InitCharacterUnitList();
+            }
+
             var playerCount = Runner.ActivePlayers.Count();
             StageInfo mapData = null;
             InGameManager.Instance.StageInit("Stage_0001", (loadMapData) =>

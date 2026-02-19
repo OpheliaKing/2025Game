@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Shin
 {
@@ -200,6 +201,11 @@ namespace Shin
             Debug.Log($"[StateAuthority] Master Player Id 설정: {findChar.MasterPlayerId}, Character: {findChar.name}");
         }
 
+        public void InitCharacterUnitList()
+        {
+            _characterUnitList.Clear();
+        }
+
         public void AddCharacterUnit(string userId, CharacterUnit characterUnit)
         {
             if (_characterUnitList.ContainsKey(userId))
@@ -210,6 +216,40 @@ namespace Shin
 
             _characterUnitList.Add(userId, characterUnit);
             Debug.Log($"캐릭터 유닛 추가: userId: {userId}, characterUnit: {characterUnit.name}");
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcPopupMessage(string message, RpcInfo info = default)
+        {
+            InGameManager.Instance.InGameUIManager.ShowTextPopup(message);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcGameClear()
+        {
+            GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.UISelect);
+            InGameManager.Instance.InGameUIManager.ShowUI("GameClearUI");
+
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcGameClearInputCheck()
+        {
+            GameManager.Instance.UImanager.SetActiveCanvas(true);
+
+            if (Object.HasStateAuthority)
+            {
+                GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
+    {
+        //RpcGameClearInputEndEvent();
+    });
+            }
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public void RpcGameClearInputEndEvent()
+        {
+            GameManager.Instance.UImanager.SetActiveCanvas(true);
         }
     }
 }
