@@ -69,18 +69,8 @@ namespace Shin
             {
                 // 클라이언트인 경우 서버에게 RPC로 스폰 요청
                 Debug.Log("플레이어 프리팹 클라이언트 스폰");
-
                 RpcRequestSpawnPlayerPrefab(playerTid);
-
-                //StartCoroutine(TestCO(playerTid));
-                //RpcRequestSpawnPlayerPrefab(playerTid);
             }
-        }
-
-        private IEnumerator TestCO(string playerTid)
-        {
-            yield return new WaitForSeconds(3f);
-            RpcRequestSpawnPlayerPrefab(playerTid);
         }
 
         /// <summary>
@@ -170,17 +160,7 @@ namespace Shin
 
                 // State Authority를 가진 클라이언트(서버/호스트)에게 MasterPlayerId 설정 요청
                 //RpcSetMasterPlayerId(charUuid, playerRef.PlayerId.ToString());
-
-
             }
-        }
-
-        /// <summary>
-        /// 클라이언트에서 MasterPlayerId 변경을 요청하는 공개 메서드
-        /// </summary>
-        public void RequestSetMasterPlayerId(NetworkId charUuid, string masterPlayerId)
-        {
-            RpcSetMasterPlayerId(charUuid, masterPlayerId);
         }
 
         /// <summary>
@@ -242,16 +222,10 @@ namespace Shin
             if (Object.HasStateAuthority)
             {
                 GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
-    {
-        //RpcGameClearInputEndEvent();
-    });
+                {
+                    //Event
+                });
             }
-        }
-
-        [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RpcGameClearInputEndEvent()
-        {
-            GameManager.Instance.UImanager.SetActiveCanvas(true);
         }
     }
 }
