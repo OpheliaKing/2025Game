@@ -229,10 +229,7 @@ namespace Shin
             Debug.Log("NetworkManager: 씬 로드 완료");
         }
 
-        public void OnSceneLoadStart(NetworkRunner runner)
-        {
-
-        }
+        public void OnSceneLoadStart(NetworkRunner runner){}
 
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
