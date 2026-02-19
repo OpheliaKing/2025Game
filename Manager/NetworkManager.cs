@@ -99,7 +99,7 @@ namespace Shin
                 {
                     Debug.Log("Scene Load End!!!");
                     StartCoroutine(WaitForMapLoadComplete());
-
+                    RpcMapLoadToClient(Runner);
                 });
             }
             else
@@ -112,6 +112,23 @@ namespace Shin
 
                 Debug.Log("클라이언트: 호스트의 씬 로드를 대기 중 (OnSceneLoadDone에서 처리)");
             }
+        }
+
+
+        [Rpc(RpcSources.All, RpcTargets.All)]
+        public static void RpcMapLoadToClient(NetworkRunner runner)
+        {
+            if (runner.IsServer)
+            {
+                return;
+            }
+            var networkManager = runner.GetBehaviour<NetworkManager>();
+            if (networkManager == null)
+            {
+                Debug.LogError("NetworkManager를 찾을 수 없습니다.");
+                return;
+            }
+            networkManager.StartCoroutine(networkManager.WaitForMapLoadComplete());
         }
 
         /// <summary>
@@ -220,11 +237,11 @@ namespace Shin
 
             // 클라이언트의 경우 맵 로드 코루틴 시작
             // 호스트는 StartGameRoutine에서 이미 시작했으므로 중복 방지
-            if (!runner.IsServer)
-            {
-                Debug.Log("클라이언트: 씬 로드 완료, 맵 로드 시작");
-                StartCoroutine(WaitForMapLoadComplete());
-            }
+            // if (!runner.IsServer)
+            // {
+            //     Debug.Log("클라이언트: 씬 로드 완료, 맵 로드 시작");
+            //     StartCoroutine(WaitForMapLoadComplete());
+            // }
         }
 
         public void OnSceneLoadStart(NetworkRunner runner)
