@@ -227,31 +227,11 @@ namespace Shin
         public void OnSceneLoadDone(NetworkRunner runner)
         {
             Debug.Log("NetworkManager: 씬 로드 완료");
-
-            // SceneController에 씬 로드 완료 알림
-            //if (GameManager.Instance?.SceneController != null)
-            // {
-            //      GameManager.Instance.SceneController.OnNetworkSceneLoadDone();
-            //       GameManager.Instance.SceneController.OnSceneLoadDone(runner);
-            //     }
-
-            // 클라이언트의 경우 맵 로드 코루틴 시작
-            // 호스트는 StartGameRoutine에서 이미 시작했으므로 중복 방지
-            // if (!runner.IsServer)
-            // {
-            //     Debug.Log("클라이언트: 씬 로드 완료, 맵 로드 시작");
-            //     StartCoroutine(WaitForMapLoadComplete());
-            // }
         }
 
         public void OnSceneLoadStart(NetworkRunner runner)
         {
-            Debug.Log("NetworkManager: 씬 로드 시작");
-            // SceneController에 씬 로드 시작 알림
-            // if (GameManager.Instance?.SceneController != null)
-            // {
-            //     GameManager.Instance.SceneController.OnSceneLoadStart(runner);
-            // }
+
         }
 
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }

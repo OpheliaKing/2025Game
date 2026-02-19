@@ -70,7 +70,9 @@ namespace Shin
                 // 클라이언트인 경우 서버에게 RPC로 스폰 요청
                 Debug.Log("플레이어 프리팹 클라이언트 스폰");
 
-                StartCoroutine(TestCO(playerTid));
+                RpcRequestSpawnPlayerPrefab(playerTid);
+
+                //StartCoroutine(TestCO(playerTid));
                 //RpcRequestSpawnPlayerPrefab(playerTid);
             }
         }
