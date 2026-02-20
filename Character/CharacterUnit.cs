@@ -102,14 +102,9 @@ namespace Shin
             Debug.Log($"[CharacterUnit] MasterPlayerId 변경됨: {MasterPlayerId}, Object: {gameObject.name}, HasInputAuthority: {Object.HasInputAuthority}");
         }
 
-        private void Awake()
-        {
-            CharacterInit();
-        }
-
         #region Init
 
-        private void CharacterInit()
+        public void CharacterInit()
         {
             EventInit();
             AnimUnitInit();
