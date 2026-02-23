@@ -17,6 +17,9 @@ public class ResourceManager : ManagerBase
     [SerializeField]
     private string _soPath = "SO";
 
+    [SerializeField]
+    private string _audioPath = "Audio";
+
     private Dictionary<string, ScriptableObject> _cashedSO = new Dictionary<string, ScriptableObject>();
 
     public string PrefabBasePath
@@ -42,6 +45,18 @@ public class ResourceManager : ManagerBase
     {
         get { return _soPath; }
         set { _soPath = value ?? string.Empty; }
+    }
+
+    public string AudioPath
+    {
+        get { return _audioPath; }
+        set { _audioPath = value ?? string.Empty; }
+    }
+
+    public AudioClip LoadAudioClip(string nameOrRelativePath, string basePath = null)
+    {
+        string path = CombineResourcePath(basePath ?? _audioPath, nameOrRelativePath);
+        return Resources.Load<AudioClip>(path);
     }
 
     private static string CombineResourcePath(string basePath, string subPath)

@@ -99,6 +99,28 @@ namespace Shin
         }
 
 
+        private SoundManager _soundManager;
+
+        public SoundManager SoundManager
+        {
+            get
+            {
+                if (_soundManager == null)
+                {
+                    for (int i = 0; i < _managers.Count; i++)
+                    {
+                        if (_managers[i].GetComponent<SoundManager>() != null)
+                        {
+                            _soundManager = _managers[i].GetComponent<SoundManager>();
+                            break;
+                        }
+                    }
+                }
+
+                return _soundManager;
+            }
+        }
+
         private LobbyManager _lobbyManager;
 
         public LobbyManager LobbyManager
