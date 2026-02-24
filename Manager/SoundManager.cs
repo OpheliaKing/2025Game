@@ -5,14 +5,24 @@ using UnityEngine;
 
 namespace Shin
 {
+    public enum SOUND_TYPE
+    {
+        BGM,
+        SE
+    }
+
     public class SoundManager : ManagerBase
     {
         [SerializeField]
         private string _audioBasePath = "Audio";
 
         private Dictionary<string, AudioClip> _clipCache = new Dictionary<string, AudioClip>();
-        private Dictionary<string, AudioSource> _playingSounds = new Dictionary<string, AudioSource>();
+        private Dictionary<string, AudioSource> _playingSoundsBgm = new Dictionary<string, AudioSource>();
+        private Dictionary<string, AudioSource> _playingSoundsSe = new Dictionary<string, AudioSource>();
+        [SerializeField]
         private Transform _audioSourceRoot;
+        private AudioSource _bgmSource;
+        private AudioSource _seSource;
 
         public string AudioBasePath
         {
@@ -33,6 +43,16 @@ namespace Shin
             var go = new GameObject("AudioSourceRoot");
             go.transform.SetParent(transform);
             _audioSourceRoot = go.transform;
+
+            var bgmGo = new GameObject("BGM");
+            bgmGo.transform.SetParent(_audioSourceRoot);
+            _bgmSource = bgmGo.AddComponent<AudioSource>();
+            _playingSoundsBgm["bgm"] = _bgmSource;
+
+            var seGo = new GameObject("SE");
+            seGo.transform.SetParent(_audioSourceRoot);
+            _seSource = seGo.AddComponent<AudioSource>();
+            _playingSoundsSe["se"] = _seSource;
         }
 
         /// <summary>
@@ -63,11 +83,12 @@ namespace Shin
         /// <summary>
         /// 이름으로 사운드 재생. 캐싱된 클립이 있으면 캐시에서 사용.
         /// </summary>
+        /// <param name="type">사운드 타입 (BGM 또는 SE)</param>
         /// <param name="nameOrRelativePath">사운드 파일 이름 또는 Resources 하위 상대 경로</param>
         /// <param name="volume">볼륨 (0~1)</param>
         /// <param name="loop">반복 재생 여부</param>
-        /// <returns>재생 ID(문자열). 중지 시 사용. 재생 실패 시 null</returns>
-        public string Play(string nameOrRelativePath, float volume = 1f, bool loop = false)
+        /// <returns>재생 ID(문자열). 중지 시 사용. "bgm" 또는 "se". 재생 실패 시 null</returns>
+        public string Play(SOUND_TYPE type, string nameOrRelativePath, float volume = 1f, bool loop = false)
         {
             EnsureAudioSourceRoot();
 
@@ -78,70 +99,64 @@ namespace Shin
                 return null;
             }
 
-            var id = Guid.NewGuid().ToString();
-            var source = CreateAudioSource();
+            var source = type == SOUND_TYPE.BGM ? _bgmSource : _seSource;
+            var id = type == SOUND_TYPE.BGM ? "bgm" : "se";
+
             source.clip = clip;
             source.volume = Mathf.Clamp01(volume);
             source.loop = loop;
             source.Play();
 
-            _playingSounds[id] = source;
+            if (type == SOUND_TYPE.BGM)
+                _playingSoundsBgm[id] = source;
+            else
+                _playingSoundsSe[id] = source;
             return id;
         }
-
-        private AudioSource CreateAudioSource()
-        {
-            var go = new GameObject("AudioSource");
-            go.transform.SetParent(_audioSourceRoot);
-            var source = go.AddComponent<AudioSource>();
-            return source;
-        }
-
-        private void Update()
-        {
-            if (_audioSourceRoot == null)
-                return;
-
-            var toRemove = new List<string>();
-            foreach (var kv in _playingSounds)
-            {
-                if (!kv.Value.isPlaying)
-                    toRemove.Add(kv.Key);
-            }
-
-            foreach (var id in toRemove)
-            {
-                if (_playingSounds.TryGetValue(id, out var source) && source != null)
-                {
-                    Destroy(source.gameObject);
-                    _playingSounds.Remove(id);
-                }
-            }
-        }
-
         /// <summary>
         /// 고유 ID(문자열)로 해당 사운드 중지.
         /// </summary>
         public void Stop(string soundId)
         {
-            if (string.IsNullOrEmpty(soundId) || !_playingSounds.TryGetValue(soundId, out var source))
+            if (string.IsNullOrEmpty(soundId))
                 return;
 
-            if (source != null)
+            if (_playingSoundsBgm.TryGetValue(soundId, out var bgmSource))
             {
-                source.Stop();
-                Destroy(source.gameObject);
+                if (bgmSource != null)
+                {
+                    bgmSource.Stop();
+                    if (bgmSource != _bgmSource)
+                        Destroy(bgmSource.gameObject);
+                }
+                _playingSoundsBgm.Remove(soundId);
+                return;
             }
 
-            _playingSounds.Remove(soundId);
+            if (_playingSoundsSe.TryGetValue(soundId, out var seSource))
+            {
+                if (seSource != null)
+                {
+                    seSource.Stop();
+                    if (seSource != _seSource)
+                        Destroy(seSource.gameObject);
+                }
+                _playingSoundsSe.Remove(soundId);
+            }
         }
 
         /// <summary>
-        /// 현재 재생 중인 사운드 ID(문자열) 목록 (읽기 전용).
+        /// 현재 재생 중인 사운드 ID(문자열) 목록 (읽기 전용). BGM + SE 통합.
         /// </summary>
         public IReadOnlyCollection<string> PlayingSoundIds
         {
-            get { return _playingSounds.Keys; }
+            get
+            {
+                var list = new List<string>(_playingSoundsBgm.Count + _playingSoundsSe.Count);
+                list.AddRange(_playingSoundsBgm.Keys);
+                list.AddRange(_playingSoundsSe.Keys);
+                return list;
+            }
         }
 
         /// <summary>
@@ -149,10 +164,13 @@ namespace Shin
         /// </summary>
         public bool IsPlaying(string soundId)
         {
-            return !string.IsNullOrEmpty(soundId)
-                && _playingSounds.TryGetValue(soundId, out var source)
-                && source != null
-                && source.isPlaying;
+            if (string.IsNullOrEmpty(soundId))
+                return false;
+            if (_playingSoundsBgm.TryGetValue(soundId, out var bgmSource) && bgmSource != null)
+                return bgmSource.isPlaying;
+            if (_playingSoundsSe.TryGetValue(soundId, out var seSource) && seSource != null)
+                return seSource.isPlaying;
+            return false;
         }
 
         /// <summary>
