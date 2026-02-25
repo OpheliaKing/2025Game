@@ -13,9 +13,6 @@ namespace Shin
 
     public class SoundManager : ManagerBase
     {
-        [SerializeField]
-        private string _audioBasePath = "Audio";
-
         private Dictionary<string, AudioClip> _clipCache = new Dictionary<string, AudioClip>();
         private Dictionary<string, AudioSource> _playingSoundsBgm = new Dictionary<string, AudioSource>();
         private Dictionary<string, AudioSource> _playingSoundsSe = new Dictionary<string, AudioSource>();
@@ -23,12 +20,6 @@ namespace Shin
         private Transform _audioSourceRoot;
         private AudioSource _bgmSource;
         private AudioSource _seSource;
-
-        public string AudioBasePath
-        {
-            get { return _audioBasePath; }
-            set { _audioBasePath = value ?? string.Empty; }
-        }
 
         public override void ManagerInit()
         {
@@ -73,7 +64,7 @@ namespace Shin
                 return null;
             }
 
-            var clip = resourceManager.LoadAudioClip(nameOrRelativePath, _audioBasePath);
+            var clip = resourceManager.LoadAudioClip(nameOrRelativePath, resourceManager.SoundPath);
             if (clip != null)
                 _clipCache[nameOrRelativePath] = clip;
 
@@ -100,12 +91,14 @@ namespace Shin
             }
 
             var source = type == SOUND_TYPE.BGM ? _bgmSource : _seSource;
-            var id = type == SOUND_TYPE.BGM ? "bgm" : "se";
+            
 
             source.clip = clip;
             source.volume = Mathf.Clamp01(volume);
             source.loop = loop;
             source.Play();
+
+            var id = Guid.NewGuid().ToString();
 
             if (type == SOUND_TYPE.BGM)
                 _playingSoundsBgm[id] = source;
