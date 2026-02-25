@@ -40,10 +40,9 @@ namespace Shin
             _bgmSource = bgmGo.AddComponent<AudioSource>();
             _playingSoundsBgm["bgm"] = _bgmSource;
 
-            var seGo = new GameObject("SE");
+            var seGo = new GameObject("SE_Root");
             seGo.transform.SetParent(_audioSourceRoot);
-            _seSource = seGo.AddComponent<AudioSource>();
-            _playingSoundsSe["se"] = _seSource;
+            _seSource = seGo.AddComponent<AudioSource>(); // 참조용, SE 재생은 동적 생성 AudioSource 사용
         }
 
         /// <summary>
@@ -73,12 +72,13 @@ namespace Shin
 
         /// <summary>
         /// 이름으로 사운드 재생. 캐싱된 클립이 있으면 캐시에서 사용.
+        /// SE일 경우 전용 AudioSource 오브젝트를 생성하여 재생 (동시 다중 SE 재생 가능).
         /// </summary>
         /// <param name="type">사운드 타입 (BGM 또는 SE)</param>
         /// <param name="nameOrRelativePath">사운드 파일 이름 또는 Resources 하위 상대 경로</param>
         /// <param name="volume">볼륨 (0~1)</param>
         /// <param name="loop">반복 재생 여부</param>
-        /// <returns>재생 ID(문자열). 중지 시 사용. "bgm" 또는 "se". 재생 실패 시 null</returns>
+        /// <returns>재생 ID(문자열). 중지 시 사용. 재생 실패 시 null</returns>
         public string Play(SOUND_TYPE type, string nameOrRelativePath, float volume = 1f, bool loop = false)
         {
             EnsureAudioSourceRoot();
@@ -90,21 +90,48 @@ namespace Shin
                 return null;
             }
 
-            var source = type == SOUND_TYPE.BGM ? _bgmSource : _seSource;
-            
-
-            source.clip = clip;
-            source.volume = Mathf.Clamp01(volume);
-            source.loop = loop;
-            source.Play();
-
             var id = Guid.NewGuid().ToString();
 
             if (type == SOUND_TYPE.BGM)
-                _playingSoundsBgm[id] = source;
-            else
-                _playingSoundsSe[id] = source;
+            {
+                _bgmSource.clip = clip;
+                _bgmSource.volume = Mathf.Clamp01(volume);
+                _bgmSource.loop = loop;
+                _bgmSource.Play();
+                _playingSoundsBgm[id] = _bgmSource;
+                return id;
+            }
+
+            // SE: 전용 AudioSource 오브젝트 생성 후 재생
+            var seGo = new GameObject($"SE_{id.Substring(0, 8)}");
+            seGo.transform.SetParent(_audioSourceRoot);
+
+            var seSource = seGo.AddComponent<AudioSource>();
+            seSource.clip = clip;
+            seSource.volume = Mathf.Clamp01(volume);
+            seSource.loop = loop;
+            seSource.Play();
+
+            _playingSoundsSe[id] = seSource;
+
+            if (!loop)
+                StartCoroutine(DestroySeWhenFinished(id, seSource, clip.length));
+
             return id;
+        }
+
+        /// <summary>
+        /// SE 재생이 끝나면 AudioSource 오브젝트를 제거하고 딕셔너리에서 제거.
+        /// </summary>
+        private IEnumerator DestroySeWhenFinished(string soundId, AudioSource source, float duration)
+        {
+            yield return new WaitForSeconds(duration + 0.1f);
+            if (source != null && source.gameObject != null)
+            {
+                if (_playingSoundsSe.TryGetValue(soundId, out var current) && current == source)
+                    _playingSoundsSe.Remove(soundId);
+                Destroy(source.gameObject);
+            }
         }
         /// <summary>
         /// 고유 ID(문자열)로 해당 사운드 중지.
