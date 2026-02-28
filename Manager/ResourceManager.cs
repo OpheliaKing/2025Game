@@ -47,7 +47,7 @@ public class ResourceManager : ManagerBase
         set { _soPath = value ?? string.Empty; }
     }
 
-    public string AudioPath
+    public string SoundPath
     {
         get { return _soundPath; }
         set { _soundPath = value ?? string.Empty; }
