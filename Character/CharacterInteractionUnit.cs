@@ -68,6 +68,7 @@ namespace Shin
         {
             if (_curInteractionObject == null)
             {
+                Debug.Log("No interaction object");
                 return;
             }
             _curInteractionObject.ActiveInteraction();

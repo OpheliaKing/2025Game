@@ -104,18 +104,21 @@ namespace Shin
                     InGameManager.PlayerInfo.SetPlayerMoveVector(_moveInput);
                     break;
                 case INPUT_MODE.UISelect:
-
-                    if (_moveInput.x == 0)
-                    {
-                        break;
-                    }
                     if (_moveInput.x > 0)
                     {
                         UIManager.Current.OnRight();
                     }
-                    else
+                    else if (_moveInput.x < 0)
                     {
                         UIManager.Current.OnLeft();
+                    }
+                    else if (_moveInput.y > 0)
+                    {
+                        UIManager.Current.OnUp();
+                    }
+                    else if (_moveInput.y < 0)
+                    {
+                        UIManager.Current.OnDown();
                     }
 
                     break;

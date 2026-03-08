@@ -38,8 +38,6 @@ namespace Shin
 
 		public void InvokeConfirm()
 		{
-			Debug.Log("Test 2");
-
 			Confirm?.Invoke();
 
 			switch (_confirm_Type)

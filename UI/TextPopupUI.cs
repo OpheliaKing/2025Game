@@ -11,13 +11,28 @@ namespace Shin
         [SerializeField]
         private TextMeshProUGUI _text;
         private IEnumerator _hideTimeCo;
-        private float _hideTime = 1.0f;
+        private float _hideTime = 5.0f;
+
+        private Animator _animator;
+        private Animator Animator
+        {
+            get
+            {
+                if (_animator == null)
+                {
+                    _animator = GetComponentInChildren<Animator>();
+                }
+                return _animator;
+            }
+        }
 
         public override void Show()
         {
             base.Show();
 
-            if(_hideTimeCo != null)
+            Animator.Play("UI_Show_Up_001");
+
+            if (_hideTimeCo != null)
             {
                 StopCoroutine(_hideTimeCo);
             }
@@ -27,8 +42,8 @@ namespace Shin
 
         public void Show(string text)
         {
-             base.Show();
-             SetText(text);
+            base.Show();
+            SetText(text);
         }
 
         public void SetText(string text)
