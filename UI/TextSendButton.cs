@@ -21,7 +21,6 @@ public class TextSendButton : MonoBehaviour
 
     public void OnCallback()
     {
-        Debug.Log("Test Callback");
         _callback?.Invoke(_text.text);
     }
 }

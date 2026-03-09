@@ -29,12 +29,12 @@ namespace Shin
             }
         }
 
-        public void ShowUI(string uiName)
+        public UIBase ShowUI(string uiName)
         {
             if (string.IsNullOrEmpty(uiName))
             {
                 Debug.LogError("ShowUI called with null or empty uiName");
-                return;
+                return null;
             }
 
             UIBase uiInstance = null;
@@ -50,7 +50,7 @@ namespace Shin
                 if (uiInstance == null)
                 {
                     Debug.LogError($"Not Found Prefab!!! {uiName} ");
-                    return;
+                    return null;
                 }
 
                 uiInstance.name = uiName;
@@ -69,13 +69,23 @@ namespace Shin
             }
 
             Push(uiInstance);
+
+            return uiInstance;
+        }
+
+        public void ShowSystemMessage(string message, float duration = 3.0f)
+        {
+            UIBase uiInstance = ShowUI("UISystemPopup");
+            if (uiInstance is UISystemMessage systemMessageUI)
+            {
+                systemMessageUI.Show(message, duration);
+            }
         }
 
         public void ShowTextPopup(string text)
         {
-            ShowUI("TextPopupUI");
-            TextPopupUI textPopupUI = Current as TextPopupUI;            
-            if (textPopupUI != null)
+            UIBase uiInstance = ShowUI("TextPopupUI");
+            if (uiInstance is TextPopupUI textPopupUI)
             {
                 textPopupUI.Show(text);
             }

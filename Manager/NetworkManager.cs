@@ -15,6 +15,16 @@ namespace Shin
     /// </summary>
     public class NetworkManager : SimulationBehaviour, INetworkRunnerCallbacks
     {
+        private void Awake()
+        {
+            Debug.Log($"NetworkManager Awake - GO: {gameObject.name}, scene: {gameObject.scene.name}");
+        }
+
+        private void OnDestroy()
+        {
+            Debug.LogWarning($"NetworkManager OnDestroy - GO: {gameObject.name}, scene: {gameObject.scene.name}");
+        }
+
         /// <summary>
         /// 안전한 Runner 접근자
         /// SimulationBehaviour의 base.Runner를 사용하며, null 체크를 포함
@@ -213,9 +223,18 @@ namespace Shin
         }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
-        public void OnConnectedToServer(NetworkRunner runner) { }
-        public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+        {
+            Debug.LogWarning($"NetworkManager OnShutdown - reason: {shutdownReason}, runnerState: {runner?.State}, GO: {gameObject.name}");
+            // GameNotFound 등으로 러너가 Shutdown되면, Fusion 권장사항대로 새 Runner 인스턴스로 재시도해야 합니다.
+            // 이 오브젝트가 파괴될 수 있어 GameManager(DDOL)에서 다음 프레임에 재생성을 예약합니다.
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.RecreateNetworkManagerNextFrame();
+            }
+        }
+        void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner) { }
+        void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }

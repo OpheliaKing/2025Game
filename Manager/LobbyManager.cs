@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
+using System.Threading;
 using Fusion;
 using Fusion.Sockets;
 using UnityEngine;
@@ -109,7 +111,7 @@ namespace Shin
         {
             if (string.IsNullOrWhiteSpace(roomName))
             {
-                onError?.Invoke("방 이름이 비어있습니다.");
+                GameManager.Instance.UImanager.ShowSystemMessage("방 이름이 비어있습니다.");
                 return;
             }
             StartCoroutine(StartHostSession(roomName));
@@ -139,24 +141,113 @@ namespace Shin
 
             if (startTask.IsFaulted)
             {
-                onError?.Invoke($"방 생성 실패: {startTask.Exception?.GetBaseException().Message}");
+                var reason = GetRoomStartFailureReason(startTask.Exception, isHost: true);
+                GameManager.Instance.UImanager.ShowSystemMessage(reason);
+                onError?.Invoke($"방 생성 실패: {reason}");
                 yield break;
             }
+
+            var startResult = startTask.Result;
+            if (!startResult.Ok)
+            {
+                var reason = GetRoomStartFailureReason(startResult, isHost: true);
+                GameManager.Instance.UImanager.ShowSystemMessage(reason);
+                onError?.Invoke($"방 생성 실패: {reason}");
+                yield break;
+            }
+
+            GameManager.Instance.UImanager.ShowSystemMessage("방 생성 성공");
 
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
         }
 
+        /// <summary>
+        /// StartGame 실패 시 예외로부터 사용자에게 보여줄 실패 원인 문자열을 반환합니다.
+        /// </summary>
+        private static string GetRoomStartFailureReason(AggregateException aggregateEx, bool isHost)
+        {
+            var ex = aggregateEx?.GetBaseException();
+            if (ex == null) return "알 수 없는 오류";
 
+            var msg = ex.Message ?? "";
+
+            // 예외 타입별 구분
+            if (ex is SocketException socketEx)
+            {
+                return socketEx.SocketErrorCode switch
+                {
+                    SocketError.ConnectionRefused => "서버에 연결할 수 없습니다. (연결 거부)",
+                    SocketError.TimedOut => "연결 시간이 초과되었습니다.",
+                    SocketError.NetworkUnreachable => "네트워크에 연결되어 있지 않습니다.",
+                    SocketError.HostNotFound => "호스트를 찾을 수 없습니다.",
+                    _ => $"네트워크 오류: {socketEx.SocketErrorCode}"
+                };
+            }
+
+            if (ex is TimeoutException)
+                return "연결 시간이 초과되었습니다.";
+
+            if (ex is OperationCanceledException)
+                return "연결이 취소되었습니다.";
+
+            // 메시지 키워드로 흔한 원인 추정
+            if (msg.IndexOf("already exist", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                msg.IndexOf("duplicate", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "이미 같은 이름의 방이 존재합니다.";
+
+            if (msg.IndexOf("session", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                msg.IndexOf("not found", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "해당 방을 찾을 수 없습니다. 이름을 확인하거나 호스트가 먼저 방을 만들어 주세요.";
+
+            if (msg.IndexOf("connection", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                msg.IndexOf("connect", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "서버 연결에 실패했습니다. 인터넷 연결을 확인해 주세요.";
+
+            if (msg.IndexOf("max", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                msg.IndexOf("player", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "방 인원이 가득 찼습니다.";
+
+            // 기본: 실제 예외 메시지 그대로 노출 (디버깅에 유리)
+            return string.IsNullOrWhiteSpace(msg) ? "알 수 없는 오류" : msg;
+        }
+
+        private static string GetRoomStartFailureReason(StartGameResult result, bool isHost)
+        {
+            var reason = result.ShutdownReason.ToString();
+            var msg = result.ErrorMessage ?? "";
+
+            // ShutdownReason 기반으로 흔한 원인 추정
+            if (reason.IndexOf("NotFound", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                reason.IndexOf("GameNotFound", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "해당 방을 찾을 수 없습니다. 이름을 확인하거나 호스트가 먼저 방을 만들어 주세요.";
+
+            if (reason.IndexOf("Full", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                reason.IndexOf("Max", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "방 인원이 가득 찼습니다.";
+
+            if (reason.IndexOf("Invalid", StringComparison.OrdinalIgnoreCase) >= 0)
+                return string.IsNullOrWhiteSpace(msg) ? $"잘못된 요청: {reason}" : msg;
+
+            if (!string.IsNullOrWhiteSpace(msg))
+                return $"{reason}: {msg}";
+
+            return $"시작 실패: {reason}";
+        }
 
         public void JoinRoom(string roomName)
         {
-            if (string.IsNullOrWhiteSpace(roomName))
+            roomName = roomName.Replace(" ", "");
+            if (string.IsNullOrEmpty(roomName))
             {
                 onError?.Invoke("방 이름이 비어있습니다.");
                 return;
             }
+            Debug.Log("Join Room: " + roomName);
+            Debug.Log("Join Room: " + roomName.Length);
+            Debug.Log("Room Empty Test" + roomName == "");
+
             StartCoroutine(StartClientSession(roomName));
         }
 
@@ -175,7 +266,10 @@ namespace Shin
             {
                 GameMode = GameMode.Client,
                 SessionName = roomName,
-                SceneManager = sceneManager
+                SceneManager = sceneManager,
+                // 방이 없을 때 클라이언트가 새 세션을 생성하지 않도록 비활성화.
+                // 없으면 Join 실패 → IsFaulted == true 로 처리됨.
+                EnableClientSessionCreation = false
             });
 
             while (!startTask.IsCompleted)
@@ -185,7 +279,18 @@ namespace Shin
 
             if (startTask.IsFaulted)
             {
-                onError?.Invoke($"방 입장 실패: {startTask.Exception?.GetBaseException().Message}");
+                var reason = GetRoomStartFailureReason(startTask.Exception, isHost: false);
+                GameManager.Instance.UImanager.ShowSystemMessage(reason);
+                onError?.Invoke($"방 입장 실패: {reason}");
+                yield break;
+            }
+
+            var startResult = startTask.Result;
+            if (!startResult.Ok)
+            {
+                var reason = GetRoomStartFailureReason(startResult, isHost: false);
+                GameManager.Instance.UImanager.ShowSystemMessage(reason);
+                onError?.Invoke($"방 입장 실패: {reason}");
                 yield break;
             }
 
