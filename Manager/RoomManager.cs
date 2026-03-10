@@ -15,10 +15,6 @@ namespace Shin
         [Header("Events")]
         public UnityEvent<List<PlayerRef>> onPlayersUpdated;
 
-        private readonly List<PlayerRef> _currentPlayerNicknames = new List<PlayerRef>();
-
-        public IReadOnlyList<PlayerRef> CurrentPlayerNicknames => _currentPlayerNicknames;
-
         [Header("Player INfo UI")]
 
         [SerializeField]
@@ -37,19 +33,12 @@ namespace Shin
                 SetActive(true);
             }
 
-            Debug.Log("Test 12345");
-
-            if (playerNicknames != null)
-            {
-                Debug.Log($"123Test {playerNicknames.Count(x => x != null)}");
-            }
-
-            _currentPlayerNicknames.Clear();
-            if (playerNicknames != null)
-            {
-                _currentPlayerNicknames.AddRange(playerNicknames);
-            }
-            onPlayersUpdated?.Invoke(new List<PlayerRef>(_currentPlayerNicknames));
+            // _currentPlayerNicknames.Clear();
+            // if (playerNicknames != null)
+            // {
+            //     _currentPlayerNicknames.AddRange(playerNicknames);
+            // }
+            //onPlayersUpdated?.Invoke(new List<PlayerRef>(_currentPlayerNicknames));
 
             UpdatePlayerUI();
         }
@@ -76,7 +65,8 @@ namespace Shin
         {
             InitPlayerInfoUI();
 
-            var createCount = CurrentPlayerNicknames.Count - _playerInfoUIList.Count;
+            var curRoomPlayerInfo = GameManager.Instance.NetworkManager.RoomPlayerInfo;
+            var createCount = curRoomPlayerInfo.Count - _playerInfoUIList.Count;
 
             Debug.Log($"Create Count {createCount}");
 
@@ -85,29 +75,39 @@ namespace Shin
                 CreatePlayerInfoUI(createCount);
             }
 
-            for (int i = 0; i < CurrentPlayerNicknames.Count; i++)
-            {
-                _playerInfoUIList[i].UpdateInfo(CurrentPlayerNicknames[i].PlayerId.ToString());
-            }
-        }
+            var index = 0;
 
-        // 필요 시 수동 갱신: Fusion 기준으로 구현 지점
-        public void RefreshFromFusion()
-        {
-            UpdateRoomPlayers(null);
+            foreach (var player in curRoomPlayerInfo)
+            {
+                _playerInfoUIList[index].UpdateInfo(player.Key);
+                index++;
+            }
         }
 
         public void GameStart()
         {
-            var runner = GameManager.Instance.NetworkManager.Runner;
-            if (runner != null && runner.IsRunning)
+            switch (GameManager.Instance.NetworkManager.Runner.GameMode)
             {
-                NetworkManager.RpcGameStart(runner);
+                case GameMode.Host:
+                    break;
+                case GameMode.Client:
+                    var nm = GameManager.Instance.NetworkManager;
+                    var localPlayer = nm.Runner.LocalPlayer;
+                    var currentReady = nm.RoomPlayerInfo.TryGetValue(localPlayer, out var roomInfo) && roomInfo.IsReady;
+                    NetworkManager.RpcRoomReady(nm.Runner, currentReady);
+                    break;
             }
-            else
-            {
-                Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
-            }
+
+            // Debug.Log("Game Start");
+            // var runner = GameManager.Instance.NetworkManager.Runner;
+            // if (runner != null && runner.IsRunning)
+            // {
+            //     NetworkManager.RpcGameStart(runner);
+            // }
+            // else
+            // {
+            //     Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
+            // }
         }
 
         public void SetActive(bool isActive)

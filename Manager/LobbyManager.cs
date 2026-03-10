@@ -6,13 +6,15 @@ using System.Net.Sockets;
 using System.Threading;
 using Fusion;
 using Fusion.Sockets;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace Shin
 {
-    public class LobbyManager : MonoBehaviour
+    public class LobbyManager : UIBase
     {
         [Header("Options")]
         [SerializeField] private byte maxPlayersPerRoom = 2;
@@ -38,6 +40,9 @@ namespace Shin
         [SerializeField]
         private List<TextSendButton> _textSendButtonList;
 
+        [SerializeField]
+        private TMP_InputField _playerNameInputField;
+
         [Header("Managers")]
         [SerializeField]
         private RoomManager roomManager;
@@ -59,8 +64,6 @@ namespace Shin
 
         private void PushPlayersToRoomManager()
         {
-            Debug.Log("Test Room");
-
             EnsureRoomManager();
             if (roomManager != null)
             {
@@ -155,8 +158,6 @@ namespace Shin
                 onError?.Invoke($"방 생성 실패: {reason}");
                 yield break;
             }
-
-            GameManager.Instance.UImanager.ShowSystemMessage("방 생성 성공");
 
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
@@ -459,6 +460,24 @@ namespace Shin
                 PushPlayersToRoomManager();
             }
         }
+
+        public override void Show()
+        {
+            base.Show();
+            UpdateUI();
+        }
+
+        public void UpdateUI()
+        {
+            _playerNameInputField.text = GameManager.Instance.NetworkManager.PlayerName;
+        }
+
+        public void OnClickPlayerNameUpdate()
+        {
+            GameManager.Instance.NetworkManager.UpdatePlayerName(_playerNameInputField.text);
+        }
+
+
 
         //         public void RpcGameStart()
         //         {

@@ -13,7 +13,7 @@ namespace Shin
     /// SimulationBehaviour로 변경하여 Static RPC를 지원
     /// NetworkRunner GameObject에 이 컴포넌트를 연결해야 함
     /// </summary>
-    public class NetworkManager : SimulationBehaviour, INetworkRunnerCallbacks
+    public partial class NetworkManager : SimulationBehaviour, INetworkRunnerCallbacks
     {
         private void Awake()
         {
@@ -203,6 +203,13 @@ namespace Shin
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log($"NetworkManager: 플레이어 {player}가 입장했습니다.");
+
+            // 호스트: 새 플레이어를 RoomReady 테이블에 추가하고 전원에게 동기화
+            if (runner.IsServer)
+            {
+                UpdatePlayerRoomReady(player, false);
+                RpcSyncPlayerReady(runner, player, false);
+            }
 
             // LobbyManager에 플레이어 입장 알림
             if (GameManager.Instance?.LobbyManager != null)

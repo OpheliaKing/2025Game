@@ -1,21 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
+using Fusion;
 using TMPro;
 using UnityEngine;
 
-public class RoomUIPlayerInfo : MonoBehaviour
+namespace Shin
 {
-    [SerializeField]
-    private TextMeshProUGUI _playerName;
-
-    public void UpdateInfo(string nickName)
+    public class RoomUIPlayerInfo : MonoBehaviour
     {
-        gameObject.SetActive(true);
-        _playerName.SetText(nickName);
-    }
+        [SerializeField]
+        private TextMeshProUGUI _playerName;
 
-    public void SetActive(bool isActive)
-    {
-        gameObject.SetActive(isActive);
+        [SerializeField]
+        private TextMeshProUGUI _readyText;
+
+        public void UpdateInfo(PlayerRef player)
+        {
+            gameObject.SetActive(true);
+            var playerName = GameManager.Instance.NetworkManager.GetPlayerName(player);
+            _playerName.SetText(playerName);
+            var readyText = (GameManager.Instance.NetworkManager.RoomPlayerInfo.TryGetValue(player, out var info) && info.IsReady) ? "Ready" : "";
+            _readyText.SetText(readyText);
+        }
+
+        public void SetActive(bool isActive)
+        {
+            gameObject.SetActive(isActive);
+        }
     }
 }
