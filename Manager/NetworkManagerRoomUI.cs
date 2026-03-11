@@ -32,7 +32,6 @@ namespace Shin
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
 
-            networkManager.UpdatePlayerRoomReady(info.Source, isReady);
             RpcSyncPlayerReady(runner, info.Source, isReady);
         }
 

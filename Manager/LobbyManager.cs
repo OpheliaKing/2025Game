@@ -3,14 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Threading;
 using Fusion;
-using Fusion.Sockets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+
 
 namespace Shin
 {
@@ -18,16 +15,9 @@ namespace Shin
     {
         [Header("Options")]
         [SerializeField] private byte maxPlayersPerRoom = 2;
-        [SerializeField] private bool autoJoinLobby = true;
-
-        [Header("Events")]
-        public UnityEvent onConnectedToMaster;
-        public UnityEvent onJoinedLobby;
-        public UnityEvent onLeftLobby;
         public UnityEvent onJoinedRoom;
         public UnityEvent onLeftRoom;
         public UnityEvent<string> onError;
-        public UnityEvent<List<SessionInfo>> onRoomListUpdatedEvent;
         public UnityEvent<List<string>> onPlayerListUpdated;
 
         private readonly Dictionary<string, SessionInfo> roomNameToInfo = new Dictionary<string, SessionInfo>();
@@ -355,17 +345,17 @@ namespace Shin
             onPlayerListUpdated?.Invoke(nicknames);
         }
 
-        public void OnPlayerJoined()
-        {
-            UpdatePlayerNicknameList();
-            PushPlayersToRoomManager();
-        }
+        // public void OnPlayerJoined()
+        // {
+        //     UpdatePlayerNicknameList();
+        //     PushPlayersToRoomManager();
+        // }
 
-        public void OnPlayerLeft()
-        {
-            UpdatePlayerNicknameList();
-            PushPlayersToRoomManager();
-        }
+        // public void OnPlayerLeft()
+        // {
+        //     UpdatePlayerNicknameList();
+        //     PushPlayersToRoomManager();
+        // }
 
         // 포톤퓨전에서 플레이어가 방에 입장할 때마다 호출되는 RPC 함수
         [Rpc(RpcSources.All, RpcTargets.All)]
@@ -426,40 +416,40 @@ namespace Shin
             }
         }
 
-        // RPC 호출을 위한 헬퍼 함수들
-        public void BroadcastPlayerJoined(PlayerRef player)
-        {
-            if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-            {
-                OnPlayerJoinedSession(player);
-            }
-        }
+        // // RPC 호출을 위한 헬퍼 함수들
+        // public void BroadcastPlayerJoined(PlayerRef player)
+        // {
+        //     if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+        //     {
+        //         OnPlayerJoinedSession(player);
+        //     }
+        // }
 
-        public void BroadcastPlayerLeft(PlayerRef player)
-        {
-            if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-            {
-                OnPlayerLeftSession(player);
-            }
-        }
+        // public void BroadcastPlayerLeft(PlayerRef player)
+        // {
+        //     if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
+        //     {
+        //         OnPlayerLeftSession(player);
+        //     }
+        // }
 
         // 포톤퓨전 러너의 플레이어 리스트를 주기적으로 체크하는 메서드
-        private void CheckPlayerChanges()
-        {
-            if (!InRoom) return;
+        // private void CheckPlayerChanges()
+        // {
+        //     if (!InRoom) return;
 
-            var runner = GameManager.Instance.NetworkManager.Runner;
-            if (runner != null && runner.ActivePlayers != null)
-            {
-                // 현재 활성 플레이어 수가 변경되었는지 확인
-                int currentPlayerCount = runner.ActivePlayers.Count();
+        //     var runner = GameManager.Instance.NetworkManager.Runner;
+        //     if (runner != null && runner.ActivePlayers != null)
+        //     {
+        //         // 현재 활성 플레이어 수가 변경되었는지 확인
+        //         int currentPlayerCount = runner.ActivePlayers.Count();
 
-                // 이전 플레이어 수와 비교하여 변경사항 감지
-                // 실제 구현에서는 이전 상태를 저장하고 비교해야 합니다
-                UpdatePlayerNicknameList();
-                PushPlayersToRoomManager();
-            }
-        }
+        //         // 이전 플레이어 수와 비교하여 변경사항 감지
+        //         // 실제 구현에서는 이전 상태를 저장하고 비교해야 합니다
+        //         UpdatePlayerNicknameList();
+        //         PushPlayersToRoomManager();
+        //     }
+        // }
 
         public override void Show()
         {
