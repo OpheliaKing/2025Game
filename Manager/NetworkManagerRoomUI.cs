@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 
@@ -103,24 +104,24 @@ namespace Shin
         /// 클라이언트/호스트가 Ready 토글 시 호출. StateAuthority(호스트)에서만 처리 후 전원에게 동기화.
         /// </summary>
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public static void RpcRoomReady(NetworkRunner runner, bool isReady, RpcInfo info = default)
+        public static void RpcRoomReady(NetworkRunner runner,PlayerRef player, bool isReady, RpcInfo info = default)
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
 
-            RpcSyncPlayerReady(runner, info.Source, isReady);
+            RpcSyncPlayerState(runner, player, isReady);
         }
 
         /// <summary>
         /// 호스트가 한 명의 Ready 상태를 모든 클라이언트에게 공유할 때 사용. 전원이 로컬 _roomReadyStates를 갱신.
         /// </summary>
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        public static void RpcSyncPlayerReady(NetworkRunner runner, PlayerRef player, bool isReady)
+        public static void RpcSyncPlayerState(NetworkRunner runner, PlayerRef player, bool isReady,bool isUpdateName = false)
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
 
-            networkManager.UpdatePlayerRoomReady(player, isReady);
+            networkManager.UpdatePlayerRoomReady(player, isReady,isUpdateName);
         }
 
 
@@ -128,7 +129,7 @@ namespace Shin
         /// <summary>
         /// 특정 플레이어의 RoomReady 값을 갱신. 플레이어 입장, Ready 토글 등 유저 데이터가 바뀔 때마다 호출해도 됨.
         /// </summary>
-        public void UpdatePlayerRoomReady(PlayerRef player, bool isReady)
+        public void UpdatePlayerRoomReady(PlayerRef player, bool isReady,bool isUpdateName = false)
         {
             //유저 데이터 정리
             if (!_roomPlayerInfo.TryGetValue(player, out var info))
@@ -141,7 +142,10 @@ namespace Shin
                 info.IsReady = isReady;
             }
 
-            RpcRequestPlayerName(Runner, player);
+            if (isUpdateName)
+            {
+                RpcRequestPlayerName(Runner, player);
+            }
 
             if (Runner != null && Runner.LocalPlayer == player)
             {
@@ -177,6 +181,17 @@ namespace Shin
             }
 
             return count;
+        }
+
+        public bool IsAllPlayerReady()
+        {
+            if (Runner == null || !Runner.IsRunning)
+            {
+                return false;
+            }
+
+            //호스트를 제외한 모든 유저가 레디했는지 확인
+            return GetReadyPlayerCount() == (Runner.ActivePlayers.Count() - 1);
         }
 
         /// <summary>

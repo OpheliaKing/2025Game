@@ -216,7 +216,7 @@ namespace Shin
                 }
 
                 // 플레이어 닉네임 동기화 (전원에게 새 플레이어 추가 브로드캐스트)
-                RpcSyncPlayerReady(runner, player, false);
+                RpcSyncPlayerState(runner, player, false,true);
             }
 
             // LobbyManager에 플레이어 입장 알림

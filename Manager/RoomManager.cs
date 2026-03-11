@@ -86,15 +86,33 @@ namespace Shin
 
         public void GameStart()
         {
+            var nm = GameManager.Instance.NetworkManager;
             switch (GameManager.Instance.NetworkManager.Runner.GameMode)
             {
                 case GameMode.Host:
+                    if (nm.IsAllPlayerReady())
+                    {
+                        var runner = GameManager.Instance.NetworkManager.Runner;
+                        if (runner != null && runner.IsRunning)
+                        {
+                            NetworkManager.RpcGameStart(runner);
+                        }
+                        else
+                        {
+                            Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Not All Player Ready");
+                        //팝업으로 띄워줄지 고민
+                    }
                     break;
                 case GameMode.Client:
-                    var nm = GameManager.Instance.NetworkManager;
+
                     var localPlayer = nm.Runner.LocalPlayer;
                     var currentReady = nm.RoomPlayerInfo.TryGetValue(localPlayer, out var roomInfo) && roomInfo.IsReady;
-                    NetworkManager.RpcRoomReady(nm.Runner, currentReady);
+                    NetworkManager.RpcRoomReady(nm.Runner, localPlayer, !currentReady);
                     break;
             }
 
