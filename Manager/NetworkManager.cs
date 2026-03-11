@@ -207,8 +207,20 @@ namespace Shin
             // 호스트: 새 플레이어를 RoomReady 테이블에 추가하고 전원에게 동기화
             if (runner.IsServer)
             {
-                UpdatePlayerRoomReady(player, false);
+                Debug.Log("플레이어 " + player + "가 입장했습니다.");
+
+                // 플레이어 닉네임 동기화 (전원에게 새 플레이어 추가 브로드캐스트)
                 RpcSyncPlayerReady(runner, player, false);
+
+                // 새로 입장한 클라이언트에게 기존 방 전체 유저 정보 전송 (호스트/기존 클라이언트 이름·준비 상태)
+                //SyncRoomPlayerInfo(runner, player);
+
+                //호스트가 아닌 다른 플레이어가 들어왔을경우 현재 방에 있는 플레이어 데이터를 넘겨줌
+                //여기 호출하는 타이밍이 꼬인거같음
+                if (runner.LocalPlayer != player)
+                {
+                    SyncRoomPlayerInfo(runner, player);
+                }
             }
 
             // LobbyManager에 플레이어 입장 알림
@@ -255,7 +267,7 @@ namespace Shin
             Debug.Log("NetworkManager: 씬 로드 완료");
         }
 
-        public void OnSceneLoadStart(NetworkRunner runner){}
+        public void OnSceneLoadStart(NetworkRunner runner) { }
 
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }

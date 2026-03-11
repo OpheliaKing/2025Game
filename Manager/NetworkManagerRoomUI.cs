@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -5,6 +6,17 @@ using UnityEngine;
 
 namespace Shin
 {
+    /// <summary>
+    /// RPC로 방 전체 플레이어 정보를 전달할 때 사용하는 스냅샷 구조체.
+    /// </summary>
+    [Serializable]
+    public struct RoomPlayerInfoSnapshot : INetworkStruct
+    {
+        public PlayerRef PlayerRef;
+        public NetworkString<_32> PlayerName;
+        public bool IsReady;
+    }
+
     public partial class NetworkManager
     {
         private string _playerName = "Player";
@@ -22,6 +34,70 @@ namespace Shin
         /// </summary>
         private readonly Dictionary<PlayerRef, RoomPlayerInfo> _roomPlayerInfo = new Dictionary<PlayerRef, RoomPlayerInfo>();
         public IReadOnlyDictionary<PlayerRef, RoomPlayerInfo> RoomPlayerInfo => _roomPlayerInfo;
+
+        /// <summary>
+        /// 호스트가 새로 입장한 클라이언트에게 현재 방 전체 플레이어 정보(이름, 준비 여부)를 전송할 때 호출.
+        /// OnPlayerJoined(호스트)에서 새 플레이어에 대해 호출하면, 해당 클라이언트의 _roomPlayerInfo가 기존 유저 데이터로 채워짐.
+        /// </summary>
+        public static void SyncRoomPlayerInfo(NetworkRunner runner, PlayerRef newPlayer)
+        {
+            if (runner == null || !runner.IsServer) return;
+
+            var networkManager = runner.GetBehaviour<NetworkManager>();
+            if (networkManager == null) return;
+
+            var list = new List<RoomPlayerInfoSnapshot>();
+            foreach (var kv in networkManager._roomPlayerInfo)
+            {
+                list.Add(new RoomPlayerInfoSnapshot
+                {
+                    PlayerRef = kv.Key,
+                    PlayerName = kv.Value.PlayerName ?? "",
+                    IsReady = kv.Value.IsReady
+                });
+            }
+            RpcSyncFullRoomState(runner, newPlayer, list.ToArray());
+        }
+
+        // /// <summary>
+        // /// 호스트 → 특정 클라이언트로 방 전체 플레이어 스냅샷 전송. 입장 직후 클라이언트가 기존 유저 정보를 받을 때 사용.
+        // /// </summary>
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public static void RpcSyncFullRoomState(NetworkRunner runner, [RpcTarget] PlayerRef target, RoomPlayerInfoSnapshot[] snapshots)
+        {
+            var networkManager = runner.GetBehaviour<NetworkManager>();
+            if (networkManager == null) return;
+
+            networkManager.ReplaceRoomPlayerInfoFromSnapshot(snapshots);
+        }
+
+        /// <summary>
+        /// 스냅샷으로 _roomPlayerInfo 전체 교체. RpcSyncFullRoomState 수신 시 호출됨.
+        /// </summary>
+        private void ReplaceRoomPlayerInfoFromSnapshot(RoomPlayerInfoSnapshot[] snapshots)
+        {
+            _roomPlayerInfo.Clear();
+            if (snapshots == null) return;
+
+            foreach (var s in snapshots)
+            {
+                _roomPlayerInfo[s.PlayerRef] = new RoomPlayerInfo
+                {
+                    PlayerName = s.PlayerName.ToString(),
+                    IsReady = s.IsReady
+                };
+            }
+
+            if (Runner != null && _roomPlayerInfo.TryGetValue(Runner.LocalPlayer, out var localInfo))
+            {
+                _roomReady = localInfo.IsReady;
+            }
+
+            if (GameManager.Instance?.LobbyManager?.RoomManager != null && Runner != null && Runner.IsRunning)
+            {
+                GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.ActivePlayers);
+            }
+        }
 
         /// <summary>
         /// 클라이언트/호스트가 Ready 토글 시 호출. StateAuthority(호스트)에서만 처리 후 전원에게 동기화.
@@ -54,6 +130,7 @@ namespace Shin
         /// </summary>
         public void UpdatePlayerRoomReady(PlayerRef player, bool isReady)
         {
+            //유저 데이터 정리
             if (!_roomPlayerInfo.TryGetValue(player, out var info))
             {
                 info = new RoomPlayerInfo { IsReady = isReady, PlayerName = "" };
@@ -70,6 +147,11 @@ namespace Shin
             {
                 _roomReady = isReady;
             }
+
+            //데이터 UI에 업데이트
+
+            Debug.Log("User Count" + _roomPlayerInfo.Count);
+            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.IsRunning ? Runner.ActivePlayers : null);
         }
 
         /// <summary>
@@ -135,6 +217,9 @@ namespace Shin
             {
                 _playerName = playerName ?? "";
             }
+
+            //닉네임 업데이트 이후 UI 업데이트
+            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.IsRunning ? Runner.ActivePlayers : null);
         }
 
         /// <summary>
@@ -161,6 +246,9 @@ namespace Shin
 
             // 이 RPC는 해당 player의 머신에서만 실행됨 → 로컬 _playerName 사용
             var localName = networkManager._playerName ?? "";
+
+
+
             RpcSyncPlayerName(runner, player, localName);
         }
 
@@ -172,6 +260,8 @@ namespace Shin
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
+
+            Debug.Log("RpcRequestPlayerName: " + playerName);
 
             networkManager.UpdatePlayerRoomPlayerName(player, playerName ?? "");
         }
