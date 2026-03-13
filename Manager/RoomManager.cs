@@ -36,7 +36,7 @@ namespace Shin
             UpdatePlayerUI();
         }
 
-        private void InitPlayerInfoUI()
+        public void InitPlayerInfoUI()
         {
             for (int i = 0; i < _playerInfoUIList.Count; i++)
             {

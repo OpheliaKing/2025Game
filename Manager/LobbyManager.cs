@@ -99,6 +99,12 @@ namespace Shin
             }
         }
 
+        private void InitRoomState()
+        {
+            GameManager.Instance.NetworkManager.DataInit();
+            GameManager.Instance.LobbyManager.RoomManager.InitPlayerInfoUI();
+        }
+
 
         // FusionBootstrap이 연결/세션을 관리. 필요 시 NetworkEvents에서 콜백 연결
         public void CreateRoom(string roomName)
@@ -113,7 +119,7 @@ namespace Shin
 
         private IEnumerator StartHostSession(string roomName)
         {
-            GameManager.Instance.NetworkManager.DataInit();
+            InitRoomState();
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
@@ -246,7 +252,7 @@ namespace Shin
 
         private IEnumerator StartClientSession(string roomName)
         {
-            GameManager.Instance.NetworkManager.DataInit();
+            InitRoomState();
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
@@ -477,6 +483,11 @@ namespace Shin
         public void OnClickPlayerNameUpdate()
         {
             GameManager.Instance.NetworkManager.UpdatePlayerName(_playerNameInputField.text);
+        }
+
+        public string GetPlayerName()
+        {
+            return _playerNameInputField.text;
         }
 
 

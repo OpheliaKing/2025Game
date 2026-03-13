@@ -39,7 +39,7 @@ namespace Shin
 
         public void DataInit()
         {
-            //_roomPlayerInfo.Clear();
+            _roomPlayerInfo.Clear();
         }
 
 
