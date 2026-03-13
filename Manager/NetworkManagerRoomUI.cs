@@ -21,8 +21,8 @@ namespace Shin
 
     public partial class NetworkManager
     {
-        private string _playerName = "Player";
-        public string PlayerName => _playerName;
+        //private string _playerName = "Player";
+        public string PlayerName => GameManager.Instance.LobbyManager.GetPlayerName();
         /// <summary>
         /// 로컬 플레이어의 준비 상태
         /// </summary>
@@ -236,7 +236,7 @@ namespace Shin
 
         public void UpdatePlayerName(string playerName)
         {
-            _playerName = playerName;
+            //_playerName = playerName;
         }
 
         /// <summary>
@@ -257,7 +257,7 @@ namespace Shin
 
             if (Runner != null && Runner.LocalPlayer == player)
             {
-                _playerName = playerName ?? "";
+                //_playerName = playerName ?? "";
             }
 
             //닉네임 업데이트 이후 UI 업데이트
@@ -287,7 +287,7 @@ namespace Shin
             if (networkManager == null) return;
 
             // 이 RPC는 해당 player의 머신에서만 실행됨 → 로컬 _playerName 사용
-            var localName = networkManager._playerName ?? "";
+            var localName = GameManager.Instance.NetworkManager.PlayerName;
 
 
 
