@@ -16,6 +16,7 @@ namespace Shin
         public PlayerRef PlayerRef;
         public NetworkString<_32> PlayerName;
         public bool IsReady;
+        public PlayerRef HostPlayerRef;
     }
 
     public partial class NetworkManager
@@ -36,11 +37,17 @@ namespace Shin
         private readonly Dictionary<PlayerRef, RoomPlayerInfo> _roomPlayerInfo = new Dictionary<PlayerRef, RoomPlayerInfo>();
         public IReadOnlyDictionary<PlayerRef, RoomPlayerInfo> RoomPlayerInfo => _roomPlayerInfo;
 
+        public void DataInit()
+        {
+            //_roomPlayerInfo.Clear();
+        }
+
+
         /// <summary>
         /// 호스트가 새로 입장한 클라이언트에게 현재 방 전체 플레이어 정보(이름, 준비 여부)를 전송할 때 호출.
         /// OnPlayerJoined(호스트)에서 새 플레이어에 대해 호출하면, 해당 클라이언트의 _roomPlayerInfo가 기존 유저 데이터로 채워짐.
         /// </summary>
-        public static void SyncRoomPlayerInfo(NetworkRunner runner, PlayerRef newPlayer)
+        public static void SyncRoomPlayerInfo(NetworkRunner runner, PlayerRef newPlayer, PlayerRef hostPlayer)
         {
             if (runner == null || !runner.IsServer) return;
 
@@ -54,7 +61,8 @@ namespace Shin
                 {
                     PlayerRef = kv.Key,
                     PlayerName = kv.Value.PlayerName ?? "",
-                    IsReady = kv.Value.IsReady
+                    IsReady = kv.Value.IsReady,
+                    HostPlayerRef = hostPlayer
                 });
             }
             RpcSyncFullRoomState(runner, newPlayer, list.ToArray());
@@ -96,7 +104,7 @@ namespace Shin
 
             if (GameManager.Instance?.LobbyManager?.RoomManager != null && Runner != null && Runner.IsRunning)
             {
-                GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.ActivePlayers);
+                GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers();
             }
         }
 
@@ -104,7 +112,7 @@ namespace Shin
         /// 클라이언트/호스트가 Ready 토글 시 호출. StateAuthority(호스트)에서만 처리 후 전원에게 동기화.
         /// </summary>
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public static void RpcRoomReady(NetworkRunner runner,PlayerRef player, bool isReady, RpcInfo info = default)
+        public static void RpcRoomReady(NetworkRunner runner, PlayerRef player, bool isReady, RpcInfo info = default)
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
@@ -112,16 +120,24 @@ namespace Shin
             RpcSyncPlayerState(runner, player, isReady);
         }
 
+        public void PlayerLeave(PlayerRef player)
+        {
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            if (runner == null) return;
+
+            RpcSyncPlayerState(runner, player, false, false, true);
+        }
+
         /// <summary>
-        /// 호스트가 한 명의 Ready 상태를 모든 클라이언트에게 공유할 때 사용. 전원이 로컬 _roomReadyStates를 갱신.
+        /// 호스트가 한 명의 유저 상태를 모든 클라이언트에게 공유할 때 사용. 전원이 로컬 _roomReadyStates를 갱신.
         /// </summary>
         [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-        public static void RpcSyncPlayerState(NetworkRunner runner, PlayerRef player, bool isReady,bool isUpdateName = false)
+        public static void RpcSyncPlayerState(NetworkRunner runner, PlayerRef player, bool isReady, bool isUpdateName = false, bool isLeave = false)
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null) return;
 
-            networkManager.UpdatePlayerRoomReady(player, isReady,isUpdateName);
+            networkManager.UpdatePlayerRoomReady(player, isReady, isUpdateName, isLeave);
         }
 
 
@@ -129,33 +145,44 @@ namespace Shin
         /// <summary>
         /// 특정 플레이어의 RoomReady 값을 갱신. 플레이어 입장, Ready 토글 등 유저 데이터가 바뀔 때마다 호출해도 됨.
         /// </summary>
-        public void UpdatePlayerRoomReady(PlayerRef player, bool isReady,bool isUpdateName = false)
+        public void UpdatePlayerRoomReady(PlayerRef player, bool isReady, bool isUpdateName = false, bool isLeave = false)
         {
-            //유저 데이터 정리
-            if (!_roomPlayerInfo.TryGetValue(player, out var info))
+            if (isLeave)
             {
-                info = new RoomPlayerInfo { IsReady = isReady, PlayerName = "" };
-                _roomPlayerInfo[player] = info;
+                if (_roomPlayerInfo.ContainsKey(player))
+                {
+                    _roomPlayerInfo.Remove(player);
+                }
             }
             else
             {
-                info.IsReady = isReady;
+                //유저 데이터 정리
+                if (!_roomPlayerInfo.TryGetValue(player, out var info))
+                {
+                    info = new RoomPlayerInfo { IsReady = isReady, PlayerName = "" };
+                    _roomPlayerInfo[player] = info;
+                }
+                else
+                {
+                    info.IsReady = isReady;
+                }
+
+                if (isUpdateName)
+                {
+                    RpcRequestPlayerName(Runner, player);
+                }
+
+                if (Runner != null && Runner.LocalPlayer == player)
+                {
+                    _roomReady = isReady;
+                }
             }
 
-            if (isUpdateName)
-            {
-                RpcRequestPlayerName(Runner, player);
-            }
-
-            if (Runner != null && Runner.LocalPlayer == player)
-            {
-                _roomReady = isReady;
-            }
 
             //데이터 UI에 업데이트
 
             Debug.Log("User Count" + _roomPlayerInfo.Count);
-            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.IsRunning ? Runner.ActivePlayers : null);
+            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers();
         }
 
         /// <summary>
@@ -234,7 +261,7 @@ namespace Shin
             }
 
             //닉네임 업데이트 이후 UI 업데이트
-            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers(Runner.IsRunning ? Runner.ActivePlayers : null);
+            GameManager.Instance.LobbyManager.RoomManager.UpdateRoomPlayers();
         }
 
         /// <summary>

@@ -60,7 +60,7 @@ namespace Shin
                 // Fusion에 맞는 UI 업데이트로 교체 필요
                 // roomManager에 적절한 업데이트 메서드가 있다면 여기서 호출하세요.
                 var ruuner = GameManager.Instance.NetworkManager.Runner;
-                roomManager.UpdateRoomPlayers(ruuner.IsRunning ? ruuner.ActivePlayers : null);
+                roomManager.UpdateRoomPlayers();
             }
         }
 
@@ -71,6 +71,7 @@ namespace Shin
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.SetLobbyManager(this);
+                GameManager.Instance.NetworkManager.OnShutDownCallback += DisConnectServer;
             }
         }
 
@@ -112,6 +113,7 @@ namespace Shin
 
         private IEnumerator StartHostSession(string roomName)
         {
+            GameManager.Instance.NetworkManager.DataInit();
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
@@ -244,6 +246,7 @@ namespace Shin
 
         private IEnumerator StartClientSession(string roomName)
         {
+            GameManager.Instance.NetworkManager.DataInit();
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
@@ -358,7 +361,6 @@ namespace Shin
         // }
 
         // 포톤퓨전에서 플레이어가 방에 입장할 때마다 호출되는 RPC 함수
-        [Rpc(RpcSources.All, RpcTargets.All)]
         public void OnPlayerJoinedSession(PlayerRef player)
         {
             Debug.Log($"플레이어 {player}가 세션에 입장했습니다.");
@@ -405,15 +407,25 @@ namespace Shin
 
         // 포톤퓨전에서 플레이어 퇴장을 감지하는 메서드
         // 이 메서드는 NetworkManager나 다른 네트워크 컴포넌트에서 호출되어야 합니다
-        public void HandlePlayerLeft(PlayerRef player)
+        public void HandlePlayerLeft(PlayerRef player, bool isHostLeft = false)
         {
             Debug.Log($"플레이어 {player}가 방을 떠났습니다.");
 
-            // RPC로 모든 클라이언트에게 플레이어 퇴장 알림
-            if (GameManager.Instance?.NetworkManager?.Runner != null)
-            {
-                OnPlayerLeftSession(player);
-            }
+            var runner = GameManager.Instance.NetworkManager.Runner;
+
+            if (runner == null) return;
+
+            GameManager.Instance.NetworkManager.PlayerLeave(player);
+            //UI 업데이트
+            roomManager.UpdatePlayerUI();
+        }
+
+        public void DisConnectServer()
+        {
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            //runner.Shutdown();
+            roomManager.HostLeft();
+            GameManager.Instance.UImanager.ShowSystemMessage("호스트가 방을 나갔습니다.");
         }
 
         // // RPC 호출을 위한 헬퍼 함수들

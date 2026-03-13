@@ -26,19 +26,12 @@ namespace Shin
         private TextMeshProUGUI _textMeshProUGUI;
 
         // Fusion 호환: 닉네임 컬렉션을 받아 UI/로직 갱신
-        public void UpdateRoomPlayers(IEnumerable<PlayerRef> playerNicknames)
+        public void UpdateRoomPlayers()
         {
             if (!gameObject.activeSelf)
             {
                 SetActive(true);
             }
-
-            // _currentPlayerNicknames.Clear();
-            // if (playerNicknames != null)
-            // {
-            //     _currentPlayerNicknames.AddRange(playerNicknames);
-            // }
-            //onPlayersUpdated?.Invoke(new List<PlayerRef>(_currentPlayerNicknames));
 
             UpdatePlayerUI();
         }
@@ -126,6 +119,17 @@ namespace Shin
             // {
             //     Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
             // }
+        }
+
+        public void HostLeft()
+        {
+            var runner = GameManager.Instance.NetworkManager.Runner;
+            if (runner == null)
+            {
+                return;
+            }
+
+            SetActive(false);
         }
 
         public void SetActive(bool isActive)

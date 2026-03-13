@@ -212,11 +212,11 @@ namespace Shin
                 //호스트가 아닌 다른 플레이어가 들어왔을경우 현재 방에 있는 플레이어 데이터를 넘겨줌
                 if (runner.LocalPlayer != player)
                 {
-                    SyncRoomPlayerInfo(runner, player);
+                    SyncRoomPlayerInfo(runner, player, runner.LocalPlayer);
                 }
 
                 // 플레이어 닉네임 동기화 (전원에게 새 플레이어 추가 브로드캐스트)
-                RpcSyncPlayerState(runner, player, false,true);
+                RpcSyncPlayerState(runner, player, false, true);
             }
 
             // LobbyManager에 플레이어 입장 알림
@@ -238,6 +238,9 @@ namespace Shin
         }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
+
+        public Action OnShutDownCallback;
+
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
             Debug.LogWarning($"NetworkManager OnShutdown - reason: {shutdownReason}, runnerState: {runner?.State}, GO: {gameObject.name}");
@@ -247,6 +250,8 @@ namespace Shin
             {
                 GameManager.Instance.RecreateNetworkManagerNextFrame();
             }
+
+            OnShutDownCallback?.Invoke();
         }
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner) { }
         void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
@@ -267,8 +272,6 @@ namespace Shin
 
         public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
         public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player) { }
-
-
         public void SceneLoad(string sceneName, LoadSceneMode mode, Action loadComplete = null)
         {
             var runner = Runner;
