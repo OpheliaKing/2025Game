@@ -108,17 +108,6 @@ namespace Shin
                     NetworkManager.RpcRoomReady(nm.Runner, localPlayer, !currentReady);
                     break;
             }
-
-            // Debug.Log("Game Start");
-            // var runner = GameManager.Instance.NetworkManager.Runner;
-            // if (runner != null && runner.IsRunning)
-            // {
-            //     NetworkManager.RpcGameStart(runner);
-            // }
-            // else
-            // {
-            //     Debug.LogError("NetworkRunner가 실행 중이 아닙니다.");
-            // }
         }
 
         public void HostLeft()

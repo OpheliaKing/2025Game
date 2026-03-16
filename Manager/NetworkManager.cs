@@ -226,15 +226,18 @@ namespace Shin
             }
         }
 
+        public Action<PlayerRef> OnPlayerLeftCallback;
+
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
         {
             Debug.Log($"NetworkManager: 플레이어 {player}가 퇴장했습니다.");
 
+            OnPlayerLeftCallback?.Invoke(player);
             // LobbyManager에 플레이어 퇴장 알림
-            if (GameManager.Instance?.LobbyManager != null)
-            {
-                GameManager.Instance.LobbyManager.HandlePlayerLeft(player);
-            }
+            // if (GameManager.Instance?.LobbyManager != null)
+            // {
+            //     GameManager.Instance.LobbyManager.HandlePlayerLeft(player);
+            // }
         }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }

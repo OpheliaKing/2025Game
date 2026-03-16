@@ -38,6 +38,7 @@ namespace Shin
         private void Awake()
         {
             GameManager.Instance.NetworkManager.OnShutDownCallback += DisconnectServer;
+            GameManager.Instance.NetworkManager.OnPlayerLeftCallback += DisconnetClient;
         }
 
         private void Update()
@@ -230,11 +231,27 @@ namespace Shin
             }
         }
 
-        public void DisconnectServer()
+
+        /// <summary>
+        /// 클라이언트와 연결이 끊겼을때
+        /// </summary>
+        private void DisconnectServer()
         {
             GameManager.Instance.UImanager.SetActiveCanvas(true);
             GameEnd();
             GameManager.Instance.UImanager.ShowSystemMessage("호스트와 연결이 끊어졌습니다");
+        }
+
+        /// <summary>
+        /// 클라이언트와 연결이 끊겼을때(다른 유저)
+        /// </summary>
+        /// <param name="player"></param>
+
+        private void DisconnetClient(PlayerRef player)
+        {
+            GameManager.Instance.UImanager.SetActiveCanvas(true);
+            GameEnd();
+            GameManager.Instance.UImanager.ShowSystemMessage("클라이언트 유저가 방을 떠났습니다");
         }
 
         private void GameEnd()

@@ -72,6 +72,7 @@ namespace Shin
             {
                 GameManager.Instance.SetLobbyManager(this);
                 GameManager.Instance.NetworkManager.OnShutDownCallback += DisConnectServer;
+                GameManager.Instance.NetworkManager.OnPlayerLeftCallback += HandlePlayerLeft;
             }
         }
 
@@ -413,7 +414,7 @@ namespace Shin
 
         // 포톤퓨전에서 플레이어 퇴장을 감지하는 메서드
         // 이 메서드는 NetworkManager나 다른 네트워크 컴포넌트에서 호출되어야 합니다
-        public void HandlePlayerLeft(PlayerRef player, bool isHostLeft = false)
+        public void HandlePlayerLeft(PlayerRef player)
         {
             Debug.Log($"플레이어 {player}가 방을 떠났습니다.");
 
