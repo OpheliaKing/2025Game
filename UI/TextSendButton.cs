@@ -5,28 +5,33 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TextSendButton : MonoBehaviour
+namespace Shin
 {
-    [SerializeField]
-    private TextMeshProUGUI _text;
-
-    public TextSnedButtonType Type;
-
-    private Action<string> _callback;
-
-    public void SetCallback(Action<string> callback)
+    public class TextSendButton : UIButtonBase
     {
-        _callback = callback;
+        [SerializeField]
+        private TextMeshProUGUI _text;
+
+        public TextSnedButtonType Type;
+
+        private Action<string> _callback;
+
+        public void SetCallback(Action<string> callback)
+        {
+            _callback = callback;
+        }
+
+        public override void OnClick()
+        {
+            base.OnClick();
+            _callback?.Invoke(_text.text);
+        }
     }
 
-    public void OnCallback()
+    public enum TextSnedButtonType
     {
-        _callback?.Invoke(_text.text);
+        CREATE_ROOM,
+        JOIN_ROOM
     }
-}
 
-public enum TextSnedButtonType
-{
-    CREATE_ROOM,
-    JOIN_ROOM
 }

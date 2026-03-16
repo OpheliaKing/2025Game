@@ -227,6 +227,8 @@ namespace Shin
             Debug.Log("Game Start");
 
             UImanager.ShowUI("StartUI");
+
+            SoundManager.Play(SOUND_TYPE.BGM, "Sound_Bgm_001");
         }
         
         public void SetInGameState(bool state)

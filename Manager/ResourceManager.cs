@@ -53,9 +53,10 @@ public class ResourceManager : ManagerBase
         set { _soundPath = value ?? string.Empty; }
     }
 
-    public AudioClip LoadAudioClip(string nameOrRelativePath, string basePath = null)
+    public AudioClip LoadAudioClip(string nameOrRelativePath, SOUND_TYPE type, string basePath = null)
     {
-        string path = CombineResourcePath(basePath ?? _soundPath, nameOrRelativePath);
+        string path = CombineResourcePath(basePath ?? _soundPath, type == SOUND_TYPE.BGM ? "BGM" : "SE");
+        path += "/" + nameOrRelativePath;
         return Resources.Load<AudioClip>(path);
     }
 

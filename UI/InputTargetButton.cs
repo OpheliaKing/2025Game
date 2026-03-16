@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Shin
 {
-	public class InputTargetButton : MonoBehaviour
+	public class InputTargetButton : UIButtonBase
 	{
 		[SerializeField]
 		private bool _isSelected;
@@ -39,6 +39,8 @@ namespace Shin
 		public void InvokeConfirm()
 		{
 			Confirm?.Invoke();
+
+			GameManager.Instance.SoundManager.Play(SOUND_TYPE.SE, _clickSound);
 
 			switch (_confirm_Type)
 			{
