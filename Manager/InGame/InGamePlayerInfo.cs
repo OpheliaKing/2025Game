@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Fusion;
@@ -35,6 +33,11 @@ namespace Shin
         public Dictionary<string, CharacterUnit> CharacterUnitList
         {
             get { return _characterUnitList; }
+        }
+
+        private void Awake()
+        {
+            GameManager.Instance.NetworkManager.OnShutDownCallback += DisconnectServer;
         }
 
         private void Update()
@@ -223,11 +226,23 @@ namespace Shin
 
             if (Object.HasStateAuthority)
             {
-                GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
+                GameEnd();
+            }
+        }
+
+        public void DisconnectServer()
+        {
+            GameManager.Instance.UImanager.SetActiveCanvas(true);
+            GameEnd();
+            GameManager.Instance.UImanager.ShowSystemMessage("호스트와 연결이 끊어졌습니다");
+        }
+
+        private void GameEnd()
+        {
+            GameManager.Instance.NetworkManager.SceneLoad("StartScene", LoadSceneMode.Single, () =>
                 {
                     //Event
                 });
-            }
         }
     }
 }
