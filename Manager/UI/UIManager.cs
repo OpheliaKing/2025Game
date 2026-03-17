@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -88,6 +89,24 @@ namespace Shin
             if (uiInstance is TextPopupUI textPopupUI)
             {
                 textPopupUI.Show(text);
+            }
+        }
+
+        public void FadeIn(float duration, Action onComplete = null)
+        {
+            UIBase uiInstance = ShowUI("FadeUI");
+            if (uiInstance is FadeUI fadeUI)
+            {
+                fadeUI.FadeIn(duration, onComplete);
+            }
+        }
+
+        public void FadeOut(float duration, Action onComplete = null)
+        {
+            UIBase uiInstance = ShowUI("FadeUI");
+            if (uiInstance is FadeUI fadeUI)
+            {
+                fadeUI.FadeOut(duration, onComplete);
             }
         }
 

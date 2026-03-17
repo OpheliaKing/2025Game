@@ -90,6 +90,7 @@ namespace Shin
             }
 
             GameManager.Instance.SoundManager.StopBGM();
+            GameManager.Instance.UImanager.FadeOut(0f);
 
             // 씬 로드는 NetworkSceneManagerDefault가 관리. 부트스트랩/러너 설정에 따름
             networkManager.StartCoroutine(networkManager.StartGameRoutine());
@@ -151,7 +152,7 @@ namespace Shin
         {
             Debug.Log("RpcGameStartInit Run!!!");
 
-            GameManager.Instance.UImanager.SetActiveCanvas(false);
+            //GameManager.Instance.UImanager.SetActiveCanvas(false);
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
         }
 
@@ -178,6 +179,9 @@ namespace Shin
 
             Debug.Log("Load Test 33");
             Debug.Log("MapLoad All End!!!");
+
+            GameManager.Instance.UImanager.FadeIn(0f);
+            GameManager.Instance.UImanager.SetActiveCanvas(false);
 
             yield return new WaitUntil(() => InGameManager.Instance.PlayerInfo != null);
 
