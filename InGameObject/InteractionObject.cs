@@ -17,8 +17,11 @@ namespace Shin
         [SerializeField]
         private SpriteRenderer sprite;
 
+        [SerializeField]
+        private GameObject _interactionAbleObject;
+
         public string UUID => _interactionData.UUID;
-        
+
         private InGamePlayerInfo _playerInfo;
         private InGamePlayerInfo PlayerInfo
         {
@@ -30,6 +33,19 @@ namespace Shin
                 }
                 return _playerInfo;
             }
+        }
+
+        [SerializeField]
+        private string _interactSound;
+
+        private void Awake()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
+            _interactionAbleObject.SetActive(false);
         }
 
         /// <summary>
@@ -84,6 +100,8 @@ namespace Shin
                     InGameManager.Instance.PlayerInfo.RpcGameClear();
                     break;
             }
+
+            GameManager.Instance.SoundManager.Play(SOUND_TYPE.SE, _interactSound);
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -118,6 +136,7 @@ namespace Shin
         /// <param name="isActive"></param>
         public void ActiveInteractionState(bool isActive)
         {
+            _interactionAbleObject.SetActive(isActive);
             if (isActive)
             {
                 Debug.Log("ActiveInteractionState: true");

@@ -19,6 +19,9 @@ namespace Shin
         private OBJECT_CONTROL_TYPE _controlType;
 
         [SerializeField]
+        private string _se;
+
+        [SerializeField]
         private GameObject _doorObject;
 
         private Animator _animator;
@@ -29,7 +32,7 @@ namespace Shin
             {
                 if (_animator == null)
                 {
-                    _animator = GetComponent<Animator>();
+                    _animator = GetComponentInChildren<Animator>();
                 }
 
                 return _animator;
@@ -62,6 +65,8 @@ namespace Shin
                     }
                     break;
             }
+
+            GameManager.Instance.SoundManager.Play(SOUND_TYPE.SE, _se);
         }
 
         private void OpenDoor()
