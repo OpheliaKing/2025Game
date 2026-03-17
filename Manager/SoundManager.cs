@@ -244,6 +244,12 @@ namespace Shin
             }
         }
 
+        public void StopBGM()
+        {
+            if (_bgmSource != null)
+                _bgmSource.Stop();
+        }
+
         /// <summary>
         /// 현재 재생 중인 사운드 ID(문자열) 목록 (읽기 전용). BGM + SE 통합.
         /// </summary>

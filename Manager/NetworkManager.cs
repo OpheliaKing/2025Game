@@ -89,6 +89,8 @@ namespace Shin
                 return;
             }
 
+            GameManager.Instance.SoundManager.StopBGM();
+
             // 씬 로드는 NetworkSceneManagerDefault가 관리. 부트스트랩/러너 설정에 따름
             networkManager.StartCoroutine(networkManager.StartGameRoutine());
         }

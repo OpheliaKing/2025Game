@@ -21,6 +21,23 @@ namespace Shin
         [SerializeField]
         private GameObject _doorObject;
 
+        private Animator _animator;
+
+        private Animator Animator
+        {
+            get
+            {
+                if (_animator == null)
+                {
+                    _animator = GetComponent<Animator>();
+                }
+
+                return _animator;
+            }
+        }
+
+        private IEnumerator _doorMoveCo;
+
         private bool _isOpen = false;
 
         public void ControlObject()
@@ -50,13 +67,29 @@ namespace Shin
         private void OpenDoor()
         {
             _isOpen = true;
-            _doorObject.SetActive(false);
+            //_doorObject.SetActive(false);
+
+            _doorMoveCo = DoorMoveCo(true);
+            StartCoroutine(_doorMoveCo);
         }
+
+
 
         private void CloseDoor()
         {
             _isOpen = false;
-            _doorObject.SetActive(true);
+            //_doorObject.SetActive(true);
+            _doorMoveCo = DoorMoveCo(false);
+            StartCoroutine(_doorMoveCo);
+        }
+
+        private IEnumerator DoorMoveCo(bool isOpen)
+        {
+            var animString = isOpen ? "Map_Move_Up" : "Map_Move_Down";
+            Animator.Play(animString);
+            yield return new WaitUntil(() => Animator.GetCurrentAnimatorStateInfo(0).IsName("DoorOpen") && Animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1.0f);
+
+            _isOpen = isOpen;
         }
     }
 }
