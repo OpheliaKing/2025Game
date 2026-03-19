@@ -187,7 +187,7 @@ namespace Shin
 
             var playerInfo = InGameManager.Instance.PlayerInfo;
             playerInfo.MapDataInit(mapData);
-
+            playerInfo.GameStartEvent();
             //InGameManager.Instance.StartGame(null);
         }
 

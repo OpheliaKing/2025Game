@@ -1,9 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
-using Mono.Cecil.Cil;
 using TMPro;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 
 namespace Shin
 {
@@ -68,7 +65,23 @@ namespace Shin
         {
             var duration = 1.0f;
             var currentFadeTime = 0f;
+            var clearTime = -1f;
 
+            var playerInfo = InGameManager.Instance.PlayerInfo;
+
+            InGameManager.Instance.PlayerInfo.OnGameClearTimeUpdate = (gameClearTime) =>
+                {
+                    clearTime = gameClearTime;
+                };
+
+            if (playerInfo.Object.HasStateAuthority)
+            {
+                playerInfo.RpcUpdateGameClearTime((Time.time - playerInfo.GameStartTime) % 60f);
+            }
+
+
+
+            yield return new WaitUntil(() => clearTime != -1f);
 
             while (currentFadeTime < duration)
             {
@@ -78,7 +91,6 @@ namespace Shin
                 yield return null;
             }
 
-            var clearTime = 54f;//여기는 게임 매니저에서 클리어 타임을 가져오는 부분을 만들어야됨
             var clearTimeDuration = 2f;
             var curCleartimeDuration = 0f;
 
@@ -93,8 +105,8 @@ namespace Shin
 
             _clearTimeText.SetText($"{clearTime:F1} Sec");
 
-            yield return new WaitForSeconds(2f);
-            
+            yield return new WaitForSeconds(1.5f);
+
             //클리어랭크에 애니메이션 추가할지 고민
             _clearRankText.SetText("S");
             _inputAble = true;

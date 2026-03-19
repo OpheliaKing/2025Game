@@ -36,7 +36,7 @@ namespace Shin
                         _canvasGroup = gameObject.AddComponent<CanvasGroup>();
                     }
                 }
-                
+
                 return _canvasGroup;
             }
         }

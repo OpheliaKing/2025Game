@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Fusion;
@@ -33,6 +34,25 @@ namespace Shin
         public Dictionary<string, CharacterUnit> CharacterUnitList
         {
             get { return _characterUnitList; }
+        }
+
+        private Action<float> _onGameClearTimeUpdate;
+        public Action<float> OnGameClearTimeUpdate
+        {
+            get
+            {
+                return _onGameClearTimeUpdate;
+            }
+            set
+            {
+                _onGameClearTimeUpdate = value;
+            }
+        }
+
+        private float _gameStartTime = 0f;
+        public float GameStartTime
+        {
+            get { return _gameStartTime; }
         }
 
         private void Awake()
@@ -260,6 +280,17 @@ namespace Shin
                 {
                     //Event
                 });
+        }
+
+        public void GameStartEvent()
+        {
+            _gameStartTime = Time.time;
+        }
+
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RpcUpdateGameClearTime(float gameClearTime)
+        {
+            _onGameClearTimeUpdate?.Invoke(gameClearTime);
         }
     }
 }
