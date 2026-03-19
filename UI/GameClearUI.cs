@@ -108,8 +108,23 @@ namespace Shin
             yield return new WaitForSeconds(1.5f);
 
             //클리어랭크에 애니메이션 추가할지 고민
-            _clearRankText.SetText("S");
+            _clearRankText.SetText(GetClearRank(clearTime));
             _inputAble = true;
+        }
+
+        private string GetClearRank(float clearTime)
+        {
+            switch (clearTime)
+            {
+                case <= 20f:
+                    return "S";
+                case <= 30f:
+                    return "A";
+                case <= 40f:
+                    return "B";
+                default:
+                    return "F";
+            }
         }
     }
 }
