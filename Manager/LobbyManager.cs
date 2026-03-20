@@ -121,10 +121,14 @@ namespace Shin
         private IEnumerator StartHostSession(string roomName)
         {
             InitRoomState();
+
+            GameManager.Instance.UImanager.ShowNetworkConnectPopup();
+
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
                 Debug.Log("Runner Null");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield break;
             }
 
@@ -146,6 +150,7 @@ namespace Shin
                 var reason = GetRoomStartFailureReason(startTask.Exception, isHost: true);
                 GameManager.Instance.UImanager.ShowSystemMessage(reason);
                 onError?.Invoke($"방 생성 실패: {reason}");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield break;
             }
 
@@ -155,12 +160,14 @@ namespace Shin
                 var reason = GetRoomStartFailureReason(startResult, isHost: true);
                 GameManager.Instance.UImanager.ShowSystemMessage(reason);
                 onError?.Invoke($"방 생성 실패: {reason}");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield break;
             }
 
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
+            GameManager.Instance.UImanager.HideNetworkConnectPopup();
         }
 
         /// <summary>
@@ -254,11 +261,13 @@ namespace Shin
         private IEnumerator StartClientSession(string roomName)
         {
             InitRoomState();
+            GameManager.Instance.UImanager.ShowNetworkConnectPopup();
             var runner = GameManager.Instance.NetworkManager.Runner;
             if (runner == null)
             {
                 Debug.Log("Runner Null");
                 onError?.Invoke("네트워크 러너가 초기화되지 않았습니다.");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield return null;
             }
 
@@ -283,6 +292,7 @@ namespace Shin
                 var reason = GetRoomStartFailureReason(startTask.Exception, isHost: false);
                 GameManager.Instance.UImanager.ShowSystemMessage(reason);
                 onError?.Invoke($"방 입장 실패: {reason}");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield break;
             }
 
@@ -292,12 +302,14 @@ namespace Shin
                 var reason = GetRoomStartFailureReason(startResult, isHost: false);
                 GameManager.Instance.UImanager.ShowSystemMessage(reason);
                 onError?.Invoke($"방 입장 실패: {reason}");
+                GameManager.Instance.UImanager.HideNetworkConnectPopup();
                 yield break;
             }
 
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
+            GameManager.Instance.UImanager.HideNetworkConnectPopup();
         }
 
         public void OnJoinedSession()

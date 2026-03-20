@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace Shin
@@ -110,11 +111,41 @@ namespace Shin
             }
         }
 
+        public void ShowNetworkConnectPopup()
+        {
+            UIBase uiInstance = ShowUI("NetworkConnectPopup");
+            if (uiInstance is NetworkConnectPopup networkConnectPopup)
+            {
+                networkConnectPopup.Show();
+            }
+        }
+
+        public void HideNetworkConnectPopup()
+        {
+            UIBase uiInstance = ShowUI("NetworkConnectPopup");
+            if (uiInstance is NetworkConnectPopup networkConnectPopup)
+            {
+                networkConnectPopup.Hide();
+            }
+        }
         public void Push(UIBase ui)
         {
             if (ui == null)
             {
                 return;
+            }
+
+            // UI_TYPE이 NONE인 UI는 스택 관리에서 제외한다.
+            // (Current 전환/OnPush/OnFocus 호출 없이 화면만 표시)
+            var uiTypeField = typeof(UIBase).GetField("_uiType", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (uiTypeField != null)
+            {
+                var uiTypeObj = uiTypeField.GetValue(ui);
+                if (uiTypeObj != null && uiTypeObj.Equals(UI_TYPE.NONE))
+                {
+                    ui.Show();
+                    return;
+                }
             }
 
             if (Current != null)

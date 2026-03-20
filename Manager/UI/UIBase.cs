@@ -3,24 +3,34 @@ using UnityEngine;
 
 namespace Shin
 {
+	public enum UI_TYPE
+	{
+		NONE,
+		NORMAL,
+		POPUP,		
+	}
+
 	public class UIBase : MonoBehaviour
 	{
 		[SerializeField]
 		private bool _startsHidden = true;
 
+		[SerializeField]
+		private UI_TYPE _uiType = UI_TYPE.NORMAL;
+
 		public bool IsVisible => gameObject.activeSelf;
 		public bool IsFocused => _isFocused;
 		private bool _isFocused;
 
-        protected virtual void Awake()
-        {
-            if (_startsHidden)
-            {
-                Hide();
-            }
+		protected virtual void Awake()
+		{
+			if (_startsHidden)
+			{
+				Hide();
+			}
 		}
 
-        protected virtual void Init(){ }
+		protected virtual void Init() { }
 
 		public virtual void OnPush() { }
 		public virtual void OnPop() { }
@@ -43,14 +53,14 @@ namespace Shin
 		protected virtual void OnConfirmImpl() { }
 		protected virtual void OnCancelImpl() { }
 
-        public virtual void Show()
-        {
-            if (!gameObject.activeSelf)
-            {
-                gameObject.SetActive(true);
-            }
+		public virtual void Show()
+		{
+			if (!gameObject.activeSelf)
+			{
+				gameObject.SetActive(true);
+			}
 
-            Init();
+			Init();
 		}
 
 		public virtual void Hide()
