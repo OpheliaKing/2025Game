@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
@@ -20,6 +21,22 @@ namespace Shin
 
         private readonly Stack<UIBase> _uiStack = new Stack<UIBase>();
 
+        [Header("InGameText Pool (Object Pooling)")]
+        [SerializeField]
+        private string _inGameTextPrefabName = "InGameTextUI";
+
+        [SerializeField]
+        private int _inGameTextPrewarmCount = 10;
+
+        [SerializeField]
+        private int _inGameTextMaxPoolSize = 50;
+
+        private readonly Queue<InGameTextUI> _inGameTextPool = new Queue<InGameTextUI>();
+        private readonly List<InGameTextUI> _inGameTextAll = new List<InGameTextUI>();
+
+        // 인스턴스별로 "자동 반환" 코루틴을 하나만 유지하기 위함
+        private readonly Dictionary<InGameTextUI, Coroutine> _inGameTextReleaseCoroutines = new Dictionary<InGameTextUI, Coroutine>();
+
         public UIBase Current => _uiStack.Count > 0 ? _uiStack.Peek() : null;
 
         public override void ManagerInit()
@@ -29,6 +46,143 @@ namespace Shin
             {
                 _cashedUI = new List<UIBase>();
             }
+            // 인게임 진입 전/후와 무관하게 풀을 즉시 프리워밍하도록 원복
+            PrewarmInGameTextPool();
+        }
+
+        private void PrewarmInGameTextPool()
+        {
+            if (_canvas == null) return;
+            var reManager = GameManager.Instance.ResourceManager;
+            if (reManager == null) return;
+
+            // 너무 많이 만들지 않도록 방어
+            int target = Mathf.Clamp(_inGameTextPrewarmCount, 0, _inGameTextMaxPoolSize);
+            for (int i = 0; i < target; i++)
+            {
+                var ui = CreateInGameTextUI(reManager);
+                if (ui == null) break;
+                ui.Hide(); // UIBase.Hide: 비활성화
+                _inGameTextPool.Enqueue(ui);
+            }
+        }
+
+        private InGameTextUI CreateInGameTextUI(ResourceManager reManager)
+        {
+            if (reManager == null || _canvas == null) return null;
+
+            // Resources 경로: Prefab/UI/InGameTextUI.prefab
+            var ui = reManager.InstantiatePrefab<InGameTextUI>(_inGameTextPrefabName, _canvas, reManager.UIPrefabPath);
+            if (ui == null) return null;
+
+            // 이름은 Show/Pool 추적에 도움됨
+            ui.name = _inGameTextPrefabName;
+            return ui;
+        }
+
+        private InGameTextUI AcquireInGameTextUI()
+        {
+            if (_inGameTextPool.Count > 0)
+            {
+                return _inGameTextPool.Dequeue();
+            }
+
+            if (_inGameTextAll.Count < _inGameTextMaxPoolSize)
+            {
+                var reManager = GameManager.Instance.ResourceManager;
+                var created = CreateInGameTextUI(reManager);
+                if (created == null) return null;
+                _inGameTextAll.Add(created);
+                return created;
+            }
+
+            // 풀 상한 도달: 남아있는 것 중 아무거나 재사용
+            // (동시 표시량이 많으면 오래된 것부터 덮어쓰는 동작이 될 수 있음)
+            return _inGameTextAll.Count > 0 ? _inGameTextAll[0] : null;
+        }
+
+        private void ReleaseInGameTextUI(InGameTextUI ui)
+        {
+            if (ui == null) return;
+            ui.Hide();
+            _inGameTextPool.Enqueue(ui);
+        }
+
+        private IEnumerator ReleaseInGameTextUIAfter(InGameTextUI ui, float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            ReleaseInGameTextUI(ui);
+
+            // 코루틴 참조 해제
+            if (ui != null && _inGameTextReleaseCoroutines.ContainsKey(ui))
+            {
+                _inGameTextReleaseCoroutines.Remove(ui);
+            }
+        }
+
+        /// <summary>
+        /// 월드 좌표 위치에 인게임 텍스트를 띄우고, 시간이 지나면 풀로 반환합니다.
+        /// </summary>
+        public InGameTextUI ShowInGameText(string text, Vector3 worldPosition, float duration = 1.0f, Camera worldCamera = null)
+        {
+            var ui = AcquireInGameTextUI();
+            if (ui == null) return null;
+
+            // 이미 해당 ui에 대해 예약된 "자동 반환"이 있으면 중복 실행 방지
+            if (_inGameTextReleaseCoroutines.TryGetValue(ui, out var running))
+            {
+                StopCoroutine(running);
+                _inGameTextReleaseCoroutines.Remove(ui);
+            }
+
+            ui.Show(text, worldPosition, worldCamera);
+
+            if (duration > 0f)
+            {
+                _inGameTextReleaseCoroutines[ui] = StartCoroutine(ReleaseInGameTextUIAfter(ui, duration));
+            }
+
+            return ui;
+        }
+
+        /// <summary>
+        /// 타겟 Transform을 따라가며 인게임 텍스트를 띄우고, 시간이 지나면 풀로 반환합니다.
+        /// </summary>
+        public InGameTextUI ShowInGameText(string text, Transform target, float duration = 1.0f, Camera worldCamera = null)
+        {
+            var ui = AcquireInGameTextUI();
+            if (ui == null) return null;
+
+            if (_inGameTextReleaseCoroutines.TryGetValue(ui, out var running))
+            {
+                StopCoroutine(running);
+                _inGameTextReleaseCoroutines.Remove(ui);
+            }
+
+            ui.Show(text, target, worldCamera);
+
+            if (duration > 0f)
+            {
+                _inGameTextReleaseCoroutines[ui] = StartCoroutine(ReleaseInGameTextUIAfter(ui, duration));
+            }
+
+            return ui;
+        }
+
+        /// <summary>
+        /// 특정 InGameTextUI를 즉시 풀로 반환합니다.
+        /// </summary>
+        public void HideInGameText(InGameTextUI ui)
+        {
+            if (ui == null) return;
+
+            if (_inGameTextReleaseCoroutines.TryGetValue(ui, out var running))
+            {
+                StopCoroutine(running);
+                _inGameTextReleaseCoroutines.Remove(ui);
+            }
+
+            ReleaseInGameTextUI(ui);
         }
 
         public UIBase ShowUI(string uiName)

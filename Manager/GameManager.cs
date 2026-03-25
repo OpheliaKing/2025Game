@@ -181,6 +181,7 @@ namespace Shin
         }
 
         private bool _isInGame = false;
+
         public bool IsInGame
         {
             get
