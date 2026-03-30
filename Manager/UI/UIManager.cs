@@ -47,10 +47,10 @@ namespace Shin
                 _cashedUI = new List<UIBase>();
             }
             // 인게임 진입 전/후와 무관하게 풀을 즉시 프리워밍하도록 원복
-            PrewarmInGameTextPool();
+            //PrewarmInGameTextPool();
         }
 
-        private void PrewarmInGameTextPool()
+        public void PrewarmInGameTextPool()
         {
             if (_canvas == null) return;
             var reManager = GameManager.Instance.ResourceManager;

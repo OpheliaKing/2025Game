@@ -55,7 +55,7 @@ namespace Shin
 
 		public virtual void Show()
 		{
-			if (!gameObject.activeSelf)
+			if (!gameObject.activeInHierarchy)
 			{
 				gameObject.SetActive(true);
 			}

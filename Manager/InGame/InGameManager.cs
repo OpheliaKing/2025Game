@@ -65,7 +65,7 @@ namespace Shin
         public void StageInit(string stageTid, Action<StageInfo> onComplete = null)
         {
             Debug.Log($"StageInfo: {StageInfo}\n stageTid: {stageTid}");
-
+            InGameUIManager.PrewarmInGameTextPool();
             StartCoroutine(StageInitCO(stageTid, onComplete));
         }
 

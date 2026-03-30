@@ -86,14 +86,15 @@ namespace Shin
                                 }
                                 else
                                 {
-                                    GameManager.Instance.UImanager.ShowInGameText("아이템이 부족합니다", transform.position, 3.0f);
-                                    Debug.Log("Empty Item");
+                                    InGameManager.Instance.InGameUIManager.ShowInGameText("아이템이 부족합니다", transform.position, 3.0f);
+                                    Debug.Log("Empty Item 1");
                                 }
                             });
                         }
                         else
                         {
-                            Debug.Log("Empty Item");
+                            InGameManager.Instance.InGameUIManager.ShowInGameText("아이템이 부족합니다", transform, 3.0f);
+                            Debug.Log("Empty Item 2");
                         }
                     });
                     break;
