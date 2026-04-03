@@ -51,6 +51,11 @@ namespace Shin
             PlayerUnit.ActiveInteraction();
         }
 
+        public void ActiveEmotion()
+        {
+            PlayerUnit.ActiveEmotion();
+        }
+
         private void MoveInputUpdate()
         {
             if (PlayerUnit == null)

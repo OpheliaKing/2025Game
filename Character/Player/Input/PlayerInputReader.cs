@@ -183,6 +183,15 @@ namespace Shin
 
             InGameManager.PlayerInfo.ActiveAbilityC();
         }
+
+        void OnEmotion(InputValue value)
+        {
+            if (!CheckPlayerInputAble())
+            {
+                return;
+            }
+            InGameManager.PlayerInfo.ActiveEmotion();
+        }
         #endregion
 
         #region UISelect
