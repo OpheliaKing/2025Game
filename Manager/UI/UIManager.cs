@@ -11,6 +11,13 @@ namespace Shin
         //Inspecter
         [SerializeField]
         private Transform _canvas;
+        public Transform Canvas
+        {
+            get
+            {
+                return _canvas;
+            }
+        }
 
         //추후 리소스 매니저에서 가져오는 방식으로 수정해야됨
 

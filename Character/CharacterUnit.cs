@@ -104,8 +104,15 @@ namespace Shin
 
         #region Init
 
-        public void CharacterInit()
+        [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+        public void RpcCharacterInit()
         {
+            CharacterInit();
+        }
+
+        public virtual void CharacterInit()
+        {
+            Debug.Log("캐릭터 초기화");
             EventInit();
             AnimUnitInit();
             MoveUnitInit();

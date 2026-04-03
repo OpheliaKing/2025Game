@@ -155,7 +155,7 @@ namespace Shin
                 createPlayerUnit.MasterPlayerId = targetPlayer.PlayerId.ToString();
             }
 
-            createPlayerUnit.CharacterInit();
+            createPlayerUnit.RpcCharacterInit();
         }
 
         /// <summary>

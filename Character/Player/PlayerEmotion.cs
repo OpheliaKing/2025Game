@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Fusion;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.PlayerLoop;
 
 namespace Shin
 {
@@ -21,7 +23,7 @@ namespace Shin
             }
         }
 
-        public SerializableDictionary<EMOETION_TYPE, Sprite> EmotionSprites;
+        public Dictionary<EMOETION_TYPE, Sprite> EmotionSprites = new Dictionary<EMOETION_TYPE, Sprite>();
 
         private Animator _anim;
         public Animator Anim
@@ -40,6 +42,20 @@ namespace Shin
 
         [SerializeField]
         private float _showTime = 3f;
+
+        public void Init()
+        {
+            var reManager = GameManager.Instance.ResourceManager;
+            var sprite = GameManager.Instance.ResourceManager.LoadSprites("Emotion_Sprite", reManager.SpritePath);
+
+            var count = System.Enum.GetValues(typeof(EMOETION_TYPE)).Length;
+
+            EmotionSprites.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                EmotionSprites.Add((EMOETION_TYPE)i, sprite.First(x=>x.name == ((EMOETION_TYPE)i).ToFileName()));
+            }
+        }
 
         public void ShowEmotion(EMOETION_TYPE emotionType)
         {
@@ -62,7 +78,7 @@ namespace Shin
 
         private IEnumerator ShowCo()
         {
-            Anim.Rebind();    
+            Anim.Rebind();
             Anim.Play("Object_Emotion_Show");
 
             yield return new WaitForSeconds(_showTime);

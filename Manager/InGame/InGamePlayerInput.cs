@@ -53,7 +53,12 @@ namespace Shin
 
         public void ActiveEmotion()
         {
-            PlayerUnit.ActiveEmotion();
+            if (PlayerUnit == null)
+            {
+                Debug.Log("Player NULL");
+                return;
+            }
+            PlayerUnit.PlayerEmotionUI.Show();
         }
 
         private void MoveInputUpdate()

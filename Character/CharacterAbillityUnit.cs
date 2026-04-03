@@ -20,6 +20,15 @@ namespace Shin
                 return _playerEmotion;
             }
         }
+        [SerializeField]
+        protected PlayerEmotionUI _playerEmotionUI;
+        public PlayerEmotionUI PlayerEmotionUI
+        {
+            get
+            {
+                return _playerEmotionUI;
+            }
+        }
         // Start is called before the first frame update
         public virtual void ActiveAbilityA()
         {
@@ -36,9 +45,9 @@ namespace Shin
             Debug.Log("ActiveAbilityC");
         }
 
-        public void ActiveEmotion()
+        public void ActiveEmotion(EMOETION_TYPE emotionType)
         {
-            RpcActiveEmotion(EMOETION_TYPE.LOVE);
+            RpcActiveEmotion(emotionType);
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
