@@ -79,6 +79,8 @@ namespace Shin
 
         public void GameStart()
         {
+            var mapName = "Stage_0001";
+
             var nm = GameManager.Instance.NetworkManager;
             switch (GameManager.Instance.NetworkManager.Runner.GameMode)
             {
@@ -88,7 +90,7 @@ namespace Shin
                         var runner = GameManager.Instance.NetworkManager.Runner;
                         if (runner != null && runner.IsRunning)
                         {
-                            NetworkManager.RpcGameStart(runner);
+                            NetworkManager.RpcGameStart(runner, mapName);
                         }
                         else
                         {

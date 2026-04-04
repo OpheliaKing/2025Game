@@ -74,7 +74,7 @@ namespace Shin
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        public static void RpcGameStart(NetworkRunner runner)
+        public static void RpcGameStart(NetworkRunner runner, string mapName)
         {
             var networkManager = runner.GetBehaviour<NetworkManager>();
             if (networkManager == null)
@@ -93,10 +93,10 @@ namespace Shin
             GameManager.Instance.UImanager.FadeOut(0f);
 
             // 씬 로드는 NetworkSceneManagerDefault가 관리. 부트스트랩/러너 설정에 따름
-            networkManager.StartCoroutine(networkManager.StartGameRoutine());
+            networkManager.StartCoroutine(networkManager.StartGameRoutine(mapName));
         }
 
-        private IEnumerator StartGameRoutine()
+        private IEnumerator StartGameRoutine(string mapName)
         {
             RpcGameStartInit(Runner);
             // 러너가 준비될 시간을 조금 준 뒤 시작 로직 실행
@@ -111,8 +111,8 @@ namespace Shin
                 SceneLoad("InGameScene", LoadSceneMode.Additive, () =>
                 {
                     Debug.Log("Scene Load End!!!");
-                    StartCoroutine(WaitForMapLoadComplete());
-                    RpcMapLoadToClient(Runner);
+                    StartCoroutine(WaitForMapLoadComplete(mapName));
+                    RpcMapLoadToClient(Runner, mapName);
                 });
             }
             else
@@ -129,7 +129,7 @@ namespace Shin
 
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        public static void RpcMapLoadToClient(NetworkRunner runner)
+        public static void RpcMapLoadToClient(NetworkRunner runner, string mapName)
         {
             if (runner.IsServer)
             {
@@ -141,7 +141,7 @@ namespace Shin
                 Debug.LogError("NetworkManager를 찾을 수 없습니다.");
                 return;
             }
-            networkManager.StartCoroutine(networkManager.WaitForMapLoadComplete());
+            networkManager.StartCoroutine(networkManager.WaitForMapLoadComplete(mapName));
         }
 
         /// <summary>
@@ -156,9 +156,9 @@ namespace Shin
             GameManager.Instance.InputManager.SetInputMode(INPUT_MODE.Player);
         }
 
-        private IEnumerator WaitForMapLoadComplete()
+        private IEnumerator WaitForMapLoadComplete(string mapName)
         {
-            Debug.Log("Load Test 11");
+            Debug.Log("Map Load Start");
 
             if (InGameManager.Instance.PlayerInfo != null)
             {
@@ -167,7 +167,7 @@ namespace Shin
 
             var playerCount = Runner.ActivePlayers.Count();
             StageInfo mapData = null;
-            InGameManager.Instance.StageInit("Stage_0001", (loadMapData) =>
+            InGameManager.Instance.StageInit(mapName, (loadMapData) =>
             {
                 RpcMapLoadComplete(Runner);
                 mapData = loadMapData;
