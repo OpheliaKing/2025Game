@@ -58,7 +58,7 @@ namespace Shin
                 Debug.LogError($"Not Found Data {mapTid}");
             }
             var resourceManager = GameManager.Instance.ResourceManager;
-            var obj = resourceManager.InstantiatePrefab<GameObject>(data.prefabPath, null, resourceManager.PrefabBasePath);
+            var obj = resourceManager.InstantiatePrefab<GameObject>(data.PrefabPath, null, resourceManager.PrefabBasePath);
             var mapData = obj.GetComponent<StageInfo>();
             Debug.Log($"{obj.gameObject.name} 생성 완료");
             onComplete?.Invoke(mapData);

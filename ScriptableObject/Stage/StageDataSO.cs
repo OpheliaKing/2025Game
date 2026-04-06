@@ -9,18 +9,18 @@ public class StageDataItem
     [Header("TID")]
 
     public string StageTid;
-    public string stageName;
-    public int stageLevel;
-    public string stageDescription;
+    public string StageName;
+    public int StageLevel;
+    public string StageDescription;
 
-    public string prefabPath = "";
-    public string mapImagePath = "";
+    public string PrefabPath = "";
+    public string MapImagePath = "";
     public bool isUnlocked = true;
 
     public StageDataItem()
     {
         StageTid = "";
-        prefabPath = "";
+        PrefabPath = "";
         isUnlocked = true;
     }
 }
@@ -99,9 +99,9 @@ public class StageDataSO : ScriptableObject
 
         return new StageData(
             item.StageTid,
-            item.stageName,
-            item.stageLevel,
-            item.stageDescription
+            item.StageName,
+            item.StageLevel,
+            item.StageDescription
         );
     }
 
@@ -157,7 +157,7 @@ public class StageDataSO : ScriptableObject
 
         if (showDebugInfo)
         {
-            Debug.Log($"스테이지 추가됨: {stageDataItem.stageName} (TID: {stageDataItem.StageTid})");
+            Debug.Log($"스테이지 추가됨: {stageDataItem.StageName} (TID: {stageDataItem.StageTid})");
         }
     }
 
@@ -179,7 +179,7 @@ public class StageDataSO : ScriptableObject
 
         if (removed && showDebugInfo)
         {
-            Debug.Log($"스테이지 제거됨: {itemToRemove.stageName} (TID: {stageTid})");
+            Debug.Log($"스테이지 제거됨: {itemToRemove.StageName} (TID: {stageTid})");
         }
 
         return removed;
@@ -199,16 +199,16 @@ public class StageDataSO : ScriptableObject
             return null;
         }
 
-        if (string.IsNullOrEmpty(item.prefabPath))
+        if (string.IsNullOrEmpty(item.PrefabPath))
         {
             Debug.LogWarning($"StageDataItem '{stageTid}'의 프리팹 경로가 설정되지 않았습니다.");
             return null;
         }
 
-        GameObject prefab = Resources.Load<GameObject>(item.prefabPath);
+        GameObject prefab = Resources.Load<GameObject>(item.PrefabPath);
         if (prefab == null)
         {
-            Debug.LogError($"프리팹을 찾을 수 없습니다: {item.prefabPath}");
+            Debug.LogError($"프리팹을 찾을 수 없습니다: {item.PrefabPath}");
         }
 
         return prefab;
@@ -226,7 +226,7 @@ public class StageDataSO : ScriptableObject
         for (int i = 0; i < stageDataList.Count; i++)
         {
             var item = stageDataList[i];
-            Debug.Log($"{i + 1}. {item.stageName} (TID: {item.StageTid}) - Unlocked: {item.isUnlocked}");
+            Debug.Log($"{i + 1}. {item.StageName} (TID: {item.StageTid}) - Unlocked: {item.isUnlocked}");
         }
     }
 
@@ -241,10 +241,10 @@ public class StageDataSO : ScriptableObject
         {
             Debug.Log($"=== Stage Info: {stageTid} ===");
             Debug.Log($"TID: {item.StageTid}");
-            Debug.Log($"Name: {item.stageName}");
-            Debug.Log($"Level: {item.stageLevel}");
-            Debug.Log($"Description: {item.stageDescription}");
-            Debug.Log($"Prefab Path: {item.prefabPath}");
+            Debug.Log($"Name: {item.StageName}");
+            Debug.Log($"Level: {item.StageLevel}");
+            Debug.Log($"Description: {item.StageDescription}");
+            Debug.Log($"Prefab Path: {item.PrefabPath}");
             Debug.Log($"Is Unlocked: {item.isUnlocked}");
         }
         else

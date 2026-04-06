@@ -39,6 +39,9 @@ namespace Shin
 
         public RoomManager RoomManager => roomManager;
 
+        [SerializeField]
+        private string _defaultMapTid = "Stage_0001";
+
         private void EnsureRoomManager()
         {
             if (roomManager == null)
@@ -167,7 +170,9 @@ namespace Shin
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
+            roomManager.Show();
             GameManager.Instance.UImanager.HideNetworkConnectPopup();
+            NetworkManager.RpcUpdateMapData(runner, _defaultMapTid);
         }
 
         /// <summary>
@@ -309,6 +314,7 @@ namespace Shin
             onJoinedRoom?.Invoke();
             UpdatePlayerNicknameList();
             PushPlayersToRoomManager();
+            roomManager.Show();
             GameManager.Instance.UImanager.HideNetworkConnectPopup();
         }
 
@@ -329,7 +335,6 @@ namespace Shin
 
         public void LeaveRoom()
         {
-            // FusionBootstrap 메뉴를 통해 세션 종료 권장
             EnsureRoomManager();
             if (roomManager != null)
             {
@@ -366,18 +371,6 @@ namespace Shin
             // Fusion: PlayerRef에 닉네임 보관 로직 필요
             onPlayerListUpdated?.Invoke(nicknames);
         }
-
-        // public void OnPlayerJoined()
-        // {
-        //     UpdatePlayerNicknameList();
-        //     PushPlayersToRoomManager();
-        // }
-
-        // public void OnPlayerLeft()
-        // {
-        //     UpdatePlayerNicknameList();
-        //     PushPlayersToRoomManager();
-        // }
 
         // 포톤퓨전에서 플레이어가 방에 입장할 때마다 호출되는 RPC 함수
         public void OnPlayerJoinedSession(PlayerRef player)
@@ -447,41 +440,6 @@ namespace Shin
             GameManager.Instance.UImanager.ShowSystemMessage("호스트가 방을 나갔습니다.");
         }
 
-        // // RPC 호출을 위한 헬퍼 함수들
-        // public void BroadcastPlayerJoined(PlayerRef player)
-        // {
-        //     if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-        //     {
-        //         OnPlayerJoinedSession(player);
-        //     }
-        // }
-
-        // public void BroadcastPlayerLeft(PlayerRef player)
-        // {
-        //     if (GameManager.Instance?.NetworkManager?.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-        //     {
-        //         OnPlayerLeftSession(player);
-        //     }
-        // }
-
-        // 포톤퓨전 러너의 플레이어 리스트를 주기적으로 체크하는 메서드
-        // private void CheckPlayerChanges()
-        // {
-        //     if (!InRoom) return;
-
-        //     var runner = GameManager.Instance.NetworkManager.Runner;
-        //     if (runner != null && runner.ActivePlayers != null)
-        //     {
-        //         // 현재 활성 플레이어 수가 변경되었는지 확인
-        //         int currentPlayerCount = runner.ActivePlayers.Count();
-
-        //         // 이전 플레이어 수와 비교하여 변경사항 감지
-        //         // 실제 구현에서는 이전 상태를 저장하고 비교해야 합니다
-        //         UpdatePlayerNicknameList();
-        //         PushPlayersToRoomManager();
-        //     }
-        // }
-
         public override void Show()
         {
             base.Show();
@@ -502,41 +460,6 @@ namespace Shin
         {
             return _playerNameInputField.text;
         }
-
-
-
-        //         public void RpcGameStart()
-        //         {
-        //             var runner = GameManager.Instance.NetworkManager.Runner;
-
-        // Debug.Log($"runner is running: {runner.IsRunning}");
-
-        //             GameManager.Instance.NetworkManager.RpcTestLog();
-        //             Debug.Log("RpcGameStart Run!!!");
-
-        //             GameManager.Instance.NetworkManager.RpcGameStart();
-
-
-
-        //             Debug.Log($"runner is running: {runner.IsRunning}");
-
-
-        //             if (GameManager.Instance.NetworkManager.Runner != null && GameManager.Instance.NetworkManager.Runner.IsRunning)
-        //             {
-        //                 Debug.Log("networkmanager runner is running");
-
-        //                 GameManager.Instance.NetworkManager.RpcTestLog();
-        //             }
-        //             else
-        //             {
-        //                 Debug.LogError("NetworkRunner is not running");
-        //             }
-
-        //             // var runner = GameManager.Instance.NetworkManager.Runner;
-        //             // var sceneManager = runner.GetComponent<INetworkSceneManager>();
-        //             // var parameters = new NetworkLoadSceneParameters { };
-        //             // runner.LoadScene(SceneRef.FromIndex(1), LoadSceneMode.Additive);
-        //         }
     }
 }
 

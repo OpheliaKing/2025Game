@@ -12,18 +12,40 @@ namespace Shin
 {
     public class RoomManager : MonoBehaviour
     {
-        [Header("Events")]
-        public UnityEvent<List<PlayerRef>> onPlayersUpdated;
-
         [Header("Player INfo UI")]
 
         [SerializeField]
         private Transform _playerInfoUIParent;
         private List<RoomUIPlayerInfo> _playerInfoUIList = new List<RoomUIPlayerInfo>();
 
+        [SerializeField]
+        private TextMeshProUGUI _mapNameText;
 
         [SerializeField]
-        private TextMeshProUGUI _textMeshProUGUI;
+        private GameObject _mapSelectButton;
+
+        private bool _isInit = false;
+
+        private void Awake()
+        {
+            Init();
+        }
+
+        private void Init()
+        {
+            GameManager.Instance.NetworkManager.OnChangeMapTidCallback += OnChangeMapTid;
+        }
+
+
+        public void Show()
+        {
+            SetActive(true);
+            if (!_isInit)
+            {
+                Init();
+                _isInit = true;
+            }
+        }
 
         // Fusion 호환: 닉네임 컬렉션을 받아 UI/로직 갱신
         public void UpdateRoomPlayers()
@@ -33,6 +55,9 @@ namespace Shin
                 SetActive(true);
             }
 
+            Debug.Log("서버 인지 확인 : " + GameManager.Instance.NetworkManager.Runner.IsServer);
+
+            ActiveMapSelectButton(GameManager.Instance.NetworkManager.Runner.IsServer);
             UpdatePlayerUI();
         }
 
@@ -79,7 +104,7 @@ namespace Shin
 
         public void GameStart()
         {
-            var mapName = "Stage_0001";
+            var mapName = GameManager.Instance.NetworkManager.SelectedMapTid;
 
             var nm = GameManager.Instance.NetworkManager;
             switch (GameManager.Instance.NetworkManager.Runner.GameMode)
@@ -121,6 +146,28 @@ namespace Shin
             }
 
             SetActive(false);
+        }
+
+        public void ActiveMapSelectButton(bool isActive)
+        {
+            _mapSelectButton.SetActive(isActive);
+        }
+
+        public void OnClickShowMapSelectPopup()
+        {
+            GameManager.Instance.UImanager.ShowUI("MapSelectPopupUI");
+        }
+
+        public void OnChangeMapTid(string mapTid)
+        {
+            var mapData = GameManager.Instance.ResourceManager.LoadSO<StageDataSO>("StageData", GameManager.Instance.ResourceManager.SOPath);
+            if (mapData == null)
+            {
+                Debug.LogError("Map Data not found");
+                return;
+            }
+            var mapName = mapData.StageDataList.Find(x => x.StageTid == mapTid)?.StageName;
+            _mapNameText.text = mapName;
         }
 
         public void SetActive(bool isActive)

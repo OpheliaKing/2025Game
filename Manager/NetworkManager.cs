@@ -219,6 +219,7 @@ namespace Shin
                 if (runner.LocalPlayer != player)
                 {
                     SyncRoomPlayerInfo(runner, player, runner.LocalPlayer);
+                    SyncMapData(player);
                 }
 
                 // 플레이어 닉네임 동기화 (전원에게 새 플레이어 추가 브로드캐스트)

@@ -29,6 +29,11 @@ namespace Shin
         private bool _roomReady = false;
         public bool RoomReady => _roomReady;
 
+        private string _selectedMapTid = "";
+        public string SelectedMapTid => _selectedMapTid;
+
+        public Action<string> OnChangeMapTidCallback;
+
         /// <summary>
         /// 플레이어별 방 정보(이름, 준비 여부 등).
         /// 호스트가 RpcSyncPlayerReady로 브로드캐스트하여 모든 클라이언트가 동일한 값을 유지.
@@ -232,6 +237,36 @@ namespace Shin
                 return info.IsReady;
             }
             return false;
+        }
+
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public static void RpcUpdateMapData(NetworkRunner runner, string mapTid)
+        {
+            var networkManager = runner.GetBehaviour<NetworkManager>();
+            if (networkManager == null) return;
+
+            networkManager.UpdateMapData(mapTid);
+        }
+
+        private void UpdateMapData(string mapTid)
+        {
+            _selectedMapTid = mapTid;
+            OnChangeMapTidCallback?.Invoke(mapTid);
+        }
+
+        public void SyncMapData(PlayerRef newPlayer)
+        {
+            RpcRequestUpdateMapData(Runner, newPlayer, _selectedMapTid);
+        }
+
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+        public static void RpcRequestUpdateMapData(NetworkRunner runner, [RpcTarget] PlayerRef target, string mapTid)
+        {
+            var networkManager = runner.GetBehaviour<NetworkManager>();
+            if (networkManager == null) return;
+
+            networkManager.UpdateMapData(mapTid);
         }
 
         public void UpdatePlayerName(string playerName)
