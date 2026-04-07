@@ -57,8 +57,8 @@ namespace Shin
 
         private void Awake()
         {
-            GameManager.Instance.NetworkManager.OnShutDownCallback += DisconnectServer;
-            GameManager.Instance.NetworkManager.OnPlayerLeftCallback += DisconnetClient;
+            GameManager.Instance.OnShutDownCallback += DisconnectServer;
+            GameManager.Instance.OnPlayerLeftCallback += DisconnetClient;
         }
 
         private void Update()
@@ -243,6 +243,7 @@ namespace Shin
         [Rpc(RpcSources.All, RpcTargets.All)]
         public void RpcGameClearInputCheck()
         {
+            Debug.Log("Game Clear Check");
             GameManager.Instance.UImanager.SetActiveCanvas(true);
 
             if (Object.HasStateAuthority)

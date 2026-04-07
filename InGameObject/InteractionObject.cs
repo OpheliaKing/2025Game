@@ -76,7 +76,7 @@ namespace Shin
                     break;
                 case INTERACTION_RESULT_TYPE.ITEM_GET:
                     Debug.Log("Item Get");
-                    PlayerInfo.RpcAddItemCount(UUID, _interactionData.ItemId, 1);
+                    PlayerInfo.RpcAddItemCount(UUID, _interactionData.ItemId, 1,GameManager.Instance.NetworkManager.Runner.LocalPlayer);
                     break;
                 case INTERACTION_RESULT_TYPE.ITEM_USE:
                     PlayerInfo.RequestItemCount(_interactionData.ItemId, (itemId, count) =>
