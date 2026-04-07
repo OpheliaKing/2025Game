@@ -139,12 +139,6 @@ namespace Shin
 
         public void HostLeft()
         {
-            var runner = GameManager.Instance.NetworkManager.Runner;
-            if (runner == null)
-            {
-                return;
-            }
-
             SetActive(false);
         }
 
@@ -173,6 +167,11 @@ namespace Shin
         public void SetActive(bool isActive)
         {
             gameObject.SetActive(isActive);
+        }
+
+        public void OnClickLeaveRoom()
+        {
+            GameManager.Instance.NetworkManager.LeaveRoom();
         }
     }
 }

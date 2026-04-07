@@ -205,6 +205,18 @@ namespace Shin
             Debug.Log($"NetworkManager: 맵 로드 완료 플레이어 수: {networkManager._mapLoadPlayerCount}");
         }
 
+        public void LeaveRoom()
+        {
+            var runner = Runner;
+            if (runner == null)
+            {
+                Debug.LogError("NetworkManager: Runner가 null입니다. NetworkRunner GameObject에 연결되어 있는지 확인하세요.");
+                return;
+            }
+
+            runner.Shutdown();
+        }
+
         // INetworkRunnerCallbacks 구현
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
@@ -239,17 +251,14 @@ namespace Shin
         {
             Debug.Log($"NetworkManager: 플레이어 {player}가 퇴장했습니다.");
 
-            OnPlayerLeftCallback?.Invoke(player);
-            // LobbyManager에 플레이어 퇴장 알림
-            // if (GameManager.Instance?.LobbyManager != null)
-            // {
-            //     GameManager.Instance.LobbyManager.HandlePlayerLeft(player);
-            // }
+            GameManager.Instance.OnPlayerLeft(player);
+
+            //OnPlayerLeftCallback?.Invoke(player);
         }
         public void OnInput(NetworkRunner runner, NetworkInput input) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
 
-        public Action OnShutDownCallback;
+        public Action<ShutdownReason> OnShutDownCallback;
 
         public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
         {
@@ -261,7 +270,9 @@ namespace Shin
                 GameManager.Instance.RecreateNetworkManagerNextFrame();
             }
 
-            OnShutDownCallback?.Invoke();
+            GameManager.Instance.OnShutdown(shutdownReason);
+
+            //OnShutDownCallback?.Invoke(shutdownReason);
         }
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner) { }
         void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }

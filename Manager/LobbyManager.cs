@@ -74,8 +74,8 @@ namespace Shin
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.SetLobbyManager(this);
-                GameManager.Instance.NetworkManager.OnShutDownCallback += DisConnectServer;
-                GameManager.Instance.NetworkManager.OnPlayerLeftCallback += HandlePlayerLeft;
+                GameManager.Instance.OnShutDownCallback += DisConnectServer;
+                GameManager.Instance.OnPlayerLeftCallback += HandlePlayerLeft;
             }
         }
 
@@ -432,12 +432,21 @@ namespace Shin
             roomManager.UpdatePlayerUI();
         }
 
-        public void DisConnectServer()
+        public void DisConnectServer(ShutdownReason shutdownReason)
         {
+            Debug.Log("DisConnectServer: " + shutdownReason);
             var runner = GameManager.Instance.NetworkManager.Runner;
             //runner.Shutdown();
             roomManager.HostLeft();
-            GameManager.Instance.UImanager.ShowSystemMessage("호스트가 방을 나갔습니다.");
+
+            switch (shutdownReason)
+            {
+                case ShutdownReason.Ok:
+                    break;
+                default:
+                    GameManager.Instance.UImanager.ShowSystemMessage("호스트가 방을 나갔습니다.");
+                    break;
+            }
         }
 
         public override void Show()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
@@ -6,7 +7,7 @@ using UnityEngine.AI;
 
 namespace Shin
 {
-    public class GameManager : SingletonObject<GameManager>
+    public partial class GameManager : SingletonObject<GameManager>
     {
 
         [SerializeField]
@@ -92,7 +93,10 @@ namespace Shin
             get
             {
                 if (_netWorkManager == null)
-                    _netWorkManager = GetComponentInChildren<NetworkManager>(true);
+                {
+                    EnsureNetworkManagerExists();                    
+                }
+                    
 
                 return _netWorkManager;
             }

@@ -255,7 +255,7 @@ namespace Shin
         /// <summary>
         /// 클라이언트와 연결이 끊겼을때
         /// </summary>
-        private void DisconnectServer()
+        private void DisconnectServer(ShutdownReason shutdownReason)
         {
             GameManager.Instance.UImanager.SetActiveCanvas(true);
             GameEnd();
