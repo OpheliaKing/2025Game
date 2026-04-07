@@ -65,18 +65,25 @@ namespace Shin
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RpcActiveControlObjectStart(string objectId, string masterPlayerId)
+        public void RpcActiveControlObjectStart(string objectUUid, string controllObjectId, string masterPlayerId)
         {
-            RpcActiveControlObjectEnd(objectId, masterPlayerId);
+            RpcActiveControlObjectEnd(objectUUid, controllObjectId, masterPlayerId);
         }
 
         [Rpc(RpcSources.All, RpcTargets.All)]
-        public void RpcActiveControlObjectEnd(string objectId, string masterPlayerId)
+        public void RpcActiveControlObjectEnd(string objectUUid, string controllObjectId, string masterPlayerId)
         {
-            var controlObject = _mapControlObjectData[objectId];
+            var controlObject = _mapControlObjectData[controllObjectId];
             if (controlObject != null)
             {
                 controlObject.ControlObject();
+            }
+
+            var interactionObject = InteractionObjectList[objectUUid];
+            if (interactionObject != null)
+            {
+                //현재는 조건없이 상호작용 비활성화 시키지만 추후 변경될수있음
+                interactionObject.SetInteractiveAble(false);
             }
         }
     }

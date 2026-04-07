@@ -47,7 +47,7 @@ namespace Shin
         }
 
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void RpcAddItemCount(string itemId, int count, RpcInfo info = default)
+        public void RpcAddItemCount(string objectUUid,string itemId, int count, RpcInfo info = default)
         {
             if (_itemInfoList.ContainsKey(itemId))
             {
@@ -61,6 +61,9 @@ namespace Shin
             }
 
             RpcPopupMessage($"{info.Source.PlayerId}님이 {itemId} {count}개 획득");
+
+            //사용한 아이템 비활성화
+            InGameManager.Instance.PlayerInfo.InteractionObjectList[objectUUid].ActiveItem(false);
         }
 
         public void RequestUseItem(string itemId, int useCount, Action<bool> onRemoveItemCountCallback)

@@ -35,6 +35,11 @@ namespace Shin
             }
         }
 
+        private bool _isInteractiveAble = true;
+        private bool _isInteractiveActive = false;
+
+        private CharacterUnit _contactPlayer;
+
         [SerializeField]
         private string _interactSound;
 
@@ -46,6 +51,7 @@ namespace Shin
         private void Init()
         {
             _interactionAbleObject.SetActive(false);
+            _isInteractiveActive = false;
         }
 
         /// <summary>
@@ -70,7 +76,7 @@ namespace Shin
                     break;
                 case INTERACTION_RESULT_TYPE.ITEM_GET:
                     Debug.Log("Item Get");
-                    PlayerInfo.RpcAddItemCount(_interactionData.ItemId, 1);
+                    PlayerInfo.RpcAddItemCount(UUID, _interactionData.ItemId, 1);
                     break;
                 case INTERACTION_RESULT_TYPE.ITEM_USE:
                     PlayerInfo.RequestItemCount(_interactionData.ItemId, (itemId, count) =>
@@ -81,7 +87,7 @@ namespace Shin
                             {
                                 if (result)
                                 {
-                                    PlayerInfo.RpcActiveControlObjectStart(_interactionData.ControlObjectId, masterPlayerId);
+                                    PlayerInfo.RpcActiveControlObjectStart(UUID,_interactionData.ControlObjectId, masterPlayerId);
                                     Debug.Log("Use Item");
                                 }
                                 else
@@ -138,6 +144,11 @@ namespace Shin
         /// <param name="isActive"></param>
         public void ActiveInteractionState(bool isActive)
         {
+            if (!_isInteractiveAble)
+            {
+                return;
+            }
+            _isInteractiveActive = isActive;
             _interactionAbleObject.SetActive(isActive);
             if (isActive)
             {
@@ -147,6 +158,28 @@ namespace Shin
             {
                 Debug.Log("ActiveInteractionState: false");
             }
+        }
+
+        public void ActiveItem(bool isActive)
+        {
+            gameObject.SetActive(isActive);
+        }
+
+        public void SetInteractiveAble(bool isAble)
+        {
+            _isInteractiveAble = isAble;
+
+            //상호작용 비활성화 되었을때 관련된것 초기화
+            if (!isAble)
+            {
+                _isInteractiveActive = isAble;
+                _interactionAbleObject.SetActive(isAble);
+                if (_contactPlayer != null)
+                {
+                    _contactPlayer.RemoveInteractionObject(this);
+                }
+            }
+
         }
     }
 }
